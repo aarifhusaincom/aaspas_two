@@ -822,7 +822,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                                     },
                                                   );
                                                 },
-                                                // itemchip
+                                                // itemchi
                                                 child: ItemChip(
                                                   width:
                                                       isTablet
