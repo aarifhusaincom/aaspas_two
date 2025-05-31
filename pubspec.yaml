@@ -1,0 +1,91 @@
+name: aaspas
+description: "A new Flutter project for aaspas aarif."
+publish_to: 'none'
+version: 1.0.0+1
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.1.0
+  http: ^1.3.0
+  cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.3.0
+  video_player: ^2.9.5
+  refresh_loadmore: ^2.0.7
+  flutter_staggered_grid_view: ^0.7.0
+  path_provider: ^2.1.5
+  url_launcher: ^6.3.0
+  permission_handler: ^11.3.0
+  flutter_native_splash: ^2.4.6
+  carousel_slider: ^5.0.0
+  geolocator: ^14.0.0
+  hive:
+  hive_flutter:
+  lottie: ^3.3.1
+  intl: ^0.18.1
+
+
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  hive_generator:
+  build_runner:
+#    flutter packages pub run build_runner build
+
+  flutter_lints: ^5.0.0
+
+
+
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/
+    - assets/images/
+    - assets/slider/
+    - assets/lottie/
+    - assets/images/category_type_cards/
+
+  fonts:
+    - family: Sansita
+      fonts:
+        - asset: assets/fonts/sansita/Sansita-Regular.ttf
+          weight: 400
+          style: normal
+
+        - asset: assets/fonts/sansita/Sansita-Italic.ttf
+          weight: 400
+          style: italic
+
+        - asset: assets/fonts/sansita/Sansita-Bold.ttf
+          weight: 700
+          style: normal
+
+        - asset: assets/fonts/sansita/Sansita-BoldItalic.ttf
+          weight: 700
+          style: italic
+
+        - asset: assets/fonts/sansita/Sansita-ExtraBold.ttf
+          weight: 800
+          style: normal
+
+        - asset: assets/fonts/sansita/Sansita-ExtraBoldItalic.ttf
+          weight: 800
+          style: italic
+
+        - asset: assets/fonts/sansita/Sansita-Black.ttf
+          weight: 900
+          style: normal
+
+        - asset: assets/fonts/sansita/Sansita-BlackItalic.ttf
+          weight: 900
+          style: italic
+
+

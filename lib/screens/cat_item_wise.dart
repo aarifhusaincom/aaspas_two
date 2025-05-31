@@ -1,0 +1,143 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../widgets/appbar_only_back.dart';
+
+import '../constant_and_api/aaspas_constant.dart';
+import '../widgets/chips/category_chip.dart';
+import '../widgets/chips/item_chip.dart';
+import '../widgets/property/property_list_non_sliver.dart';
+import '../widgets/shops/services_list_non_sliver.dart';
+import '../widgets/shops/shop_list_non_sliver.dart';
+
+class CatItemWise extends StatefulWidget {
+  const CatItemWise({super.key});
+
+  @override
+  State<CatItemWise> createState() => _CatItemWiseState();
+}
+
+class _CatItemWiseState extends State<CatItemWise> {
+  dynamic data;
+  String? id;
+  String? name;
+  String? imageUrl;
+  String? cardType;
+  String? categoryType;
+  @override
+  void didChangeDependencies() {
+    if (data == null) {
+      final args = ModalRoute.of(context)!.settings.arguments;
+      if (args != null && args is Map<String, dynamic>) {
+        data = args;
+        id = data?['id'];
+        name = data?['name'];
+        imageUrl = data?['imageUrl'];
+        categoryType = data?['categoryType'];
+
+        print('//////////////////////////// categoryType');
+        print(categoryType);
+        print(id);
+        cardType = data?['cardType']; // send me category or item
+      }
+    }
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppbarOnlyBack(title: "Related Search"),
+      body: Column(
+        spacing: 10,
+        children: [
+          Container(
+            // color: Colors.purple,
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            width: double.infinity,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              spacing: 8,
+              children: [
+                // ItemChipClose(itemName: "Charging Cover "),
+                if (cardType == "item")
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: ItemChipClose(itemName: name!),
+                  ),
+                if (cardType == "category")
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: CategoryChipClose(
+                      imageUrl: imageUrl!,
+                      catName: name!,
+                    ),
+                  ),
+                // ItemChip(itemName: "Mobile Cover"),
+                // CategoryChip(
+                //   imageUrl:
+                //       "https://firebasestorage.googleapis.com/v0/b/aaspas-api.firebasestorage.app/o/categoryImages%2F1737092923003_1000089124.png?alt=media&token=ec54b18d-13d2-4a14-99d6-d29a5bbe6a9f",
+                //   catName: "Fast Food Shop ",
+                // ),
+                // CategoryChip(
+                //   imageUrl:
+                //       "https://firebasestorage.googleapis.com/v0/b/aaspas-api.firebasestorage.app/o/categoryImages%2F1736583419690_Women's%20Traditional%20Wear.png?alt=media&token=c5e2043b-8ee0-476b-8dcb-0833b4599440",
+                //   catName: "Women Traditional Wear",
+                // ),
+              ],
+            ),
+          ),
+
+          // Related Shops Nearby (Text)
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            height: 35,
+            width: double.infinity,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "Related Shops Nearby",
+              softWrap: true,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+
+              style: GoogleFonts.roboto(
+                textStyle: TextStyle(
+                  fontSize: 16,
+                  color: AaspasColors.textHalfBlack,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+
+          // Near by shops builder non Sliver
+
+          // If come via category Card
+          if (categoryType != null && cardType == "category")
+            Expanded(
+              child:
+                  (categoryType == 'properties')
+                      ? PropertyListNonSliver(id: '$id')
+                      : (categoryType == 'services')
+                      ? ServicesListNonSliver()
+                      : ShopListNonSliver(shopFor: cardType, id: id),
+            ),
+
+          // If come via item Card
+          if (id != null && cardType == "item")
+            Expanded(
+              child:
+                  (categoryType == 'shops')
+                      ? ShopListNonSliver(shopFor: cardType, id: id)
+                      : PropertyListNonSliver(id: '$id'),
+            ),
+        ],
+      ),
+    );
+  }
+}
