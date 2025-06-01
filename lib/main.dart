@@ -94,7 +94,7 @@ class MyApp extends StatelessWidget {
         '/location_permission': (context) => LocationPermission(),
         '/location_denied': (context) => LocationDenied(),
         '/image_slider': (context) => ImageSlider(),
-        '/property_sale_details': (context) => PropertyDetailsPage(),
+        '/property_details': (context) => PropertyDetailsPage(),
         '/property_video_player': (context) => PropertyVideoPlayer(),
         // '/search_focused': (context) => ShopDetails(),
         // '/search_typed': (context) => ShopDetails(),

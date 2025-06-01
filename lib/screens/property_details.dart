@@ -3,10 +3,13 @@ import 'dart:convert';
 import 'package:aaspas/widgets/image_slider/image_slider.dart';
 import 'package:aaspas/widgets/property/property_list_sliver.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constant_and_api/aaspas_constant.dart';
 import '../../widgets/appbar_only_back.dart';
@@ -25,6 +28,33 @@ class PropertyDetailsPage extends StatefulWidget {
 }
 
 class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
+  //------for same page refresh----- starts //
+  final ScrollController _scrollController = ScrollController();
+  late String currentPropertyId;
+
+  /// load new property method
+  void loadNewProperty(String newPropertyId) {
+    if (newPropertyId == currentPropertyId) return;
+
+    currentPropertyId = newPropertyId;
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOut,
+    );
+    dataLoaded = false;
+    setState(() {});
+    getPropertyByID();
+    // getPropertyByID().then((_) {
+    //   _scrollController.animateTo(
+    //     0,
+    //     duration: const Duration(milliseconds: 400),
+    //     curve: Curves.easeOut,
+    //   );
+    // });
+  }
+
+  //------for same page refresh----- ends //
   bool dataLoaded = false;
 
   String categoryId = "";
@@ -49,7 +79,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   List images = [];
   //////////////////////////////
   Future<void> getPropertyByID() async {
-    final String paramString = '?id=${widget.propertyId}';
+    final String paramString = '?id=$currentPropertyId';
     final url = '${AaspasApi.baseUrl}${AaspasApi.getPropertyByID}$paramString';
 
     final response = await http.get(Uri.parse(url));
@@ -83,6 +113,38 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     }
   }
 
+  /////////////-----getShareText start ////////////
+
+  //   String getShareText2() {
+  //     return '''
+  // 🏠 *$title*
+  //
+  // 📍 $area, $city - $pinCode
+  //
+  // 💰 Price: ₹${_formatPrice(actualPrice)}
+  // 📐 Area: $totalArea sq.ft
+  // ☎️ Owner: $ownerName (${phoneNo.isNotEmpty ? phoneNo : "N/A"})
+  //
+  // 📝 $description
+  //
+  // Aaspas Property Link:
+  // https://aaspas.app/property?id=${widget.propertyId}
+  // ''';
+  //   }
+
+  String getShareText() {
+    return '💸 *Price - ₹ ${_formatPrice(actualPrice)}*\n'
+        '📐 *$totalArea sq Feet*\n'
+        '( ₹ ${(actualPrice / totalArea).toStringAsFixed(0)} per sq Feet )\n\n'
+        '📍 $area - $city\n'
+        '🏠 $description \n\n'
+        '👤* *$ownerName*\n'
+        '☎️* *$phoneNo*\n'
+        '\n\n'
+        '*Property Code- 123*\n\n';
+  }
+  /////////////-----getShareText end ////////////
+
   String _formatPrice(int price) {
     if (price >= 10000000) {
       double cr = price / 10000000;
@@ -98,6 +160,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   @override
   initState() {
     super.initState();
+    currentPropertyId = widget.propertyId;
     getPropertyByID();
   }
 
@@ -114,6 +177,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
       appBar: AppbarOnlyBack(title: "Property Details"),
       backgroundColor: AaspasColors.white,
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
@@ -246,7 +310,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     title:
-                                        "₹ ${(actualPrice / totalArea).toStringAsFixed(0)} /sqFt",
+                                        "₹ ${(actualPrice / totalArea).toStringAsFixed(0)} /sqft",
                                     fontSize: 14,
                                     horizontalPadding: 10,
                                     color: AaspasColors.primary,
@@ -321,12 +385,43 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Icon(
-                                      Icons.copy_all_outlined,
-                                      size: 25,
-                                      color: AaspasColors.primary,
+                                    InkWell(
+                                      onTap: () async {
+                                        final text = getShareText();
+                                        await Clipboard.setData(
+                                          ClipboardData(text: text),
+                                        );
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              "Property details copied to clipboard",
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Icon(
+                                        Icons.copy_all_outlined,
+                                        size: 25,
+                                        color: AaspasColors.primary,
+                                      ),
                                     ),
                                     LabelCard(
+                                      onTap: () {
+                                        Share.share(
+                                          '*Price - ₹ ${_formatPrice(actualPrice)}*\n'
+                                          '*$totalArea sq Feet*\n'
+                                          '( ₹ ${(actualPrice / totalArea).toStringAsFixed(0)} per sq Feet )\n\n'
+                                          '$area - $city\n'
+                                          '$description \n\n'
+                                          '* *$ownerName*\n'
+                                          '* *$phoneNo*\n'
+                                          '\n\n'
+                                          '*Property Code- 123*\n\n'
+                                          '',
+                                        );
+                                      },
                                       constraints: BoxConstraints(
                                         minWidth: 100,
                                         maxWidth: 100,
@@ -479,7 +574,10 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
               ),
             ),
           ),
-          PropertyListSliver(propertyId: widget.propertyId),
+          PropertyListSliver(
+            propertyId: currentPropertyId,
+            onTapPropertyCard: loadNewProperty,
+          ),
         ],
       ),
     );

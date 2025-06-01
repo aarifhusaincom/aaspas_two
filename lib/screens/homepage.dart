@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'package:aaspas/widgets/shops/shop_list_sliver_nearby.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constant_and_api/aaspas_constant.dart';
@@ -66,11 +67,12 @@ class _HomepageState extends State<Homepage> {
           ReelsSlideView(),
           AaspasSearchBar(),
           ThreeCardsOfCategoryType(),
+
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 18),
               child: SizedBox(
-                // height: 32,
+                // height: 10,
                 child: Wrap(
                   spacing: 10,
                   runSpacing: 10,
@@ -288,14 +290,11 @@ class _HomepageState extends State<Homepage> {
                       width: 160,
                       child: TextButton(
                         onPressed: () {
-                          Navigator.pushNamed(
-                            context,
-                            "/property_sale_details",
-                          );
+                          Navigator.pushNamed(context, "/property_details");
                         },
                         child: Text(
                           maxLines: 1,
-                          "property_sale_details",
+                          "property_details",
                           style: TextStyle(
                             decorationColor: Color(0xFF732FCB),
                             fontSize: 14,
@@ -373,7 +372,7 @@ class _HomepageState extends State<Homepage> {
               ),
             ),
           ),
-          ShopListSliver(),
+          ShopListSliverNearby(),
         ],
       ),
     );

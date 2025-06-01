@@ -24,6 +24,7 @@ class LabelCard extends StatelessWidget {
       color: AaspasColors.textHalfBlack,
       borderRadius: BorderRadius.all(Radius.circular(4)),
     ),
+    this.onTap,
   });
 
   // Text
@@ -31,6 +32,7 @@ class LabelCard extends StatelessWidget {
   final Color color;
   final double fontSize;
   final FontWeight? fontWeight;
+  final VoidCallback? onTap;
 
   // Icon
   final bool showIcon;
@@ -52,25 +54,41 @@ class LabelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: horizontalPadding,
-        vertical: verticalPadding,
-      ),
-      constraints: constraints,
-      decoration: decoration,
-      child: Row(
-        // mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (showIcon) ...[
-            SvgPicture.asset(iconPath, height: iconSize, width: iconSize),
-            SizedBox(width: spacing),
-            // 👈 this adds space between icon and text
-          ],
-          if (showIcon)
-            Flexible(
-              child: Text(
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+          vertical: verticalPadding,
+        ),
+        constraints: constraints,
+        decoration: decoration,
+        child: Row(
+          // mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (showIcon) ...[
+              SvgPicture.asset(iconPath, height: iconSize, width: iconSize),
+              SizedBox(width: spacing),
+              // 👈 this adds space between icon and text
+            ],
+            if (showIcon)
+              Flexible(
+                child: Text(
+                  title,
+                  softWrap: true,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.roboto(
+                    textStyle: TextStyle(color: color),
+                    fontSize: fontSize,
+                    fontWeight: fontWeight,
+                  ),
+                ),
+              ),
+            if (!showIcon)
+              Text(
                 title,
                 softWrap: true,
                 maxLines: 1,
@@ -82,21 +100,8 @@ class LabelCard extends StatelessWidget {
                   fontWeight: fontWeight,
                 ),
               ),
-            ),
-          if (!showIcon)
-            Text(
-              title,
-              softWrap: true,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.roboto(
-                textStyle: TextStyle(color: color),
-                fontSize: fontSize,
-                fontWeight: fontWeight,
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -28,6 +28,27 @@ class ShopDetailsPage extends StatefulWidget {
 }
 
 class _ShopDetailsPageState extends State<ShopDetailsPage> {
+  //------for same page refresh----- starts //
+  final ScrollController _scrollController = ScrollController();
+  late String currentShopId;
+
+  /// load new Shop method
+  void loadNewShop(String newShopId) {
+    if (newShopId == currentShopId) return;
+
+    currentShopId = newShopId;
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOut,
+    );
+    dataLoaded = false;
+    setState(() {});
+    fetchShopDetailsById();
+    getShopsCatItems();
+  }
+
+  //------for same page refresh----- ends //
   ///////////////////////////////////////////////////////////
 
   bool noDataFoundForCatsItems = false;
@@ -41,11 +62,13 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
 
   List featuredItems = [];
   List otherItems = [];
-  List featuredCategories = [];
+  List featuredCategoryDetails = [];
+
   List othersCategories = [];
   Future<void> getShopsCatItems() async {
+    currentShopId = widget.id;
     /////////////////////////////////////
-    final String paramString = '?id=${widget.id}';
+    final String paramString = '?id=$currentShopId';
     final url = '${AaspasApi.baseUrl}${AaspasApi.getShopsCatItems}$paramString';
     /////////////////////////////////////
 
@@ -56,8 +79,10 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
       featuredItems = jsonData['items'][0]['featuredItems'];
       otherItems = jsonData['items'][0]['otherItems'];
 
-      featuredCategories = jsonData['category'][0]['featuredCategoryDetails'];
+      featuredCategoryDetails =
+          jsonData['category'][0]['featuredCategoryDetails'];
       othersCategories = jsonData['category'][0]['otherCategoryDetails'];
+      setState(() {});
     }
   }
 
@@ -66,6 +91,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
 
   List shopImages = [];
   List workingDays = [];
+  List<String> featuredCategories = [];
   String shopName = "";
   String address = "";
   String area = "";
@@ -83,7 +109,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
     // print("fetchShopDetailsById() Runs");
     /////////////////////////////////////
     final String paramString =
-        '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&id=${widget.id}';
+        '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&id=$currentShopId';
     final url =
         '${AaspasApi.baseUrl}${AaspasApi.getShopsDetailsById}$paramString';
     /////////////////////////////////////
@@ -115,6 +141,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
       active = jsonData['items'][0]['active'];
       distanceKm = jsonData['items'][0]['distanceKm'];
       workingDays = jsonData['items'][0]['workingDays'] ?? [];
+      featuredCategories = jsonData['items'][0]['featuredCategories'] ?? [];
 
       if (shopImages.isEmpty) {
         newImageLinks = [];
@@ -130,9 +157,10 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
   void initState() {
     super.initState();
 
-    getShopsCatItems().then((_) {
-      setState(() {}); // Trigger rebuild to reflect data
-    });
+    getShopsCatItems();
+    // .then((_) {
+    // setState(() {}); // Trigger rebuild to reflect data
+    // });
     fetchShopDetailsById().then((_) {
       isShopOpenNow = isShopOpen(
         openTimeStr: openTime,
@@ -255,7 +283,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                   onTap: () {
                                     Navigator.pushNamed(
                                       context,
-                                      '/property_video_player',
+                                      '/Shop_video_player',
                                       arguments: {'video': video},
                                     );
                                   },
@@ -863,23 +891,25 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                             WrapCrossAlignment.center,
                                         runSpacing: 8, // vertical spacing
                                         children: List.generate(
-                                          (featuredCategories.length +
+                                          (featuredCategoryDetails.length +
                                               othersCategories.length),
                                           (index) {
                                             if (index <
-                                                featuredCategories.length) {
+                                                featuredCategoryDetails
+                                                    .length) {
                                               return CategoryChip(
                                                 catName:
-                                                    featuredCategories[index]['category_name'] ??
+                                                    featuredCategoryDetails[index]['category_name'] ??
                                                     '',
                                                 imageUrl:
-                                                    featuredCategories[index]['category_image'] ??
+                                                    featuredCategoryDetails[index]['category_image'] ??
                                                     '',
                                               );
                                             } else {
                                               final adjustedIndex =
                                                   index -
-                                                  featuredCategories.length;
+                                                  featuredCategoryDetails
+                                                      .length;
                                               return CategoryChip(
                                                 catName:
                                                     othersCategories[adjustedIndex]['category_name'] ??
@@ -946,7 +976,11 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
               ),
             ),
           ),
-          ShopListSliver(),
+          ShopListSliver(
+            shopId: currentShopId,
+            featuredCatIds: featuredCategories,
+            onTapShopCard: loadNewShop,
+          ),
         ],
       ),
     );

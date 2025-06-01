@@ -8,22 +8,14 @@ import '../../widgets/shop_card.dart';
 
 import '../../model/shop_model.dart';
 
-class ShopListSliver extends StatefulWidget {
-  const ShopListSliver({
-    super.key,
-    required this.shopId,
-    required this.featuredCatIds,
-    this.onTapShopCard,
-  });
-  final List<String> featuredCatIds;
-  final String shopId;
-  final void Function(String shopId)? onTapShopCard;
+class ShopListSliverNearby extends StatefulWidget {
+  const ShopListSliverNearby({super.key});
 
   @override
-  State<ShopListSliver> createState() => _ShopListSliverState();
+  State<ShopListSliverNearby> createState() => _ShopListSliverNearbyState();
 }
 
-class _ShopListSliverState extends State<ShopListSliver> {
+class _ShopListSliverNearbyState extends State<ShopListSliverNearby> {
   //////////////////////////////////////////////////
   List<Items> shopList = [];
   int currentPage = 1;
@@ -36,7 +28,7 @@ class _ShopListSliverState extends State<ShopListSliver> {
   //////////////////////////////////////////////////
   Future<void> fetchShops() async {
     final String paramString =
-        '?featureCategoryId=${widget.featuredCatIds.join(',')}lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize';
+        '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize';
     final url =
         '${AaspasApi.baseUrl}${AaspasApi.getShopsByCategory}$paramString';
 
@@ -113,21 +105,13 @@ class _ShopListSliverState extends State<ShopListSliver> {
             }
             ///////////////////////////////////////
             if (index < shopList.length) {
-              if (widget.shopId != shopList[index].sId) {
-                return SizedBox(height: 0);
-              }
-              return InkWell(
-                onTap: () {
-                  widget.onTapShopCard!(shopList[index].sId!);
-                },
-                child: ShopCard(
-                  edgeInsets: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  image: "${shopList[index].bigImageUrl}",
-                  shopName: "${shopList[index].shopName}",
-                  shopAddress: "${shopList[index].address}",
-                  currentDistance:
-                      "${shopList[index].distanceKm!.toStringAsFixed(2) ?? 0.00} KM",
-                ),
+              return ShopCard(
+                edgeInsets: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                image: "${shopList[index].bigImageUrl}",
+                shopName: "${shopList[index].shopName}",
+                shopAddress: "${shopList[index].address}",
+                currentDistance:
+                    "${shopList[index].distanceKm!.toStringAsFixed(2) ?? 0.00} KM",
               );
             } else {
               if (isLastPage) {

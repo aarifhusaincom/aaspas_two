@@ -11,9 +11,11 @@ class PropertyListSliver extends StatefulWidget {
     super.key,
     this.propertyId = '6832ba660061f42441adc081',
     this.propertyCategoryId = '6793353ecf01ca5fecd2c881',
+    this.onTapPropertyCard,
   });
   final String? propertyId;
   final String? propertyCategoryId;
+  final void Function(String propertyId)? onTapPropertyCard;
 
   @override
   State<PropertyListSliver> createState() => _PropertyListSliverState();
@@ -125,24 +127,29 @@ class _PropertyListSliverState extends State<PropertyListSliver> {
 
               if (index < propertyList.length) {
                 if (widget.propertyId != propertyList[index].sId) {
-                  return PropertyCard(
-                    propertyTitle: "${propertyList[index].title}",
-                    actualPrice: propertyList[index].actualPrice,
-                    visualPrice: "${propertyList[index].visualPrice}",
-                    totalArea: propertyList[index].totalArea,
-                    phoneNo: propertyList[index].phoneNo.toString(),
-                    brokerageType: "${propertyList[index].brokerageType}",
-                    image:
-                        jsonData['items'][index]['images'].length == 0
-                            ? "assets/images/shopPlaceholder.png"
-                            : jsonData['items'].length == 0
-                            ? "assets/images/shopPlaceholder.png"
-                            : "${jsonData['items'][index]['images'][0]['url']}",
-                    area: "${propertyList[index].area}",
-                    city: "${propertyList[index].city}",
-                    edgeInsets: EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+                  return InkWell(
+                    onTap: () {
+                      widget.onTapPropertyCard!(propertyList[index].sId);
+                    },
+                    child: PropertyCard(
+                      propertyTitle: "${propertyList[index].title}",
+                      actualPrice: propertyList[index].actualPrice,
+                      visualPrice: "${propertyList[index].visualPrice}",
+                      totalArea: propertyList[index].totalArea,
+                      phoneNo: propertyList[index].phoneNo.toString(),
+                      brokerageType: "${propertyList[index].brokerageType}",
+                      image:
+                          jsonData['items'][index]['images'].length == 0
+                              ? "assets/images/shopPlaceholder.png"
+                              : jsonData['items'].length == 0
+                              ? "assets/images/shopPlaceholder.png"
+                              : "${jsonData['items'][index]['images'][0]['url']}",
+                      area: "${propertyList[index].area}",
+                      city: "${propertyList[index].city}",
+                      edgeInsets: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                     ),
                   );
                 } else {
