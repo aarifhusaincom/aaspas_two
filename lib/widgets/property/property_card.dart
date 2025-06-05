@@ -7,7 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../constant_and_api/aaspas_constant.dart';
 import '../buttons/custom_button.dart';
-import '../label_card.dart';
+import '../cat_type_and_cards/label_card.dart';
 
 class PropertyCard extends StatelessWidget {
   const PropertyCard({

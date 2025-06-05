@@ -3,8 +3,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import '../../constant_and_api/aaspas_constant.dart';
-import '../../widgets/shop_card.dart';
+import 'shop_card.dart';
 
 import '../../model/shop_model.dart';
 
@@ -29,8 +30,7 @@ class _ShopListSliverNearbyState extends State<ShopListSliverNearby> {
   Future<void> fetchShops() async {
     final String paramString =
         '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize';
-    final url =
-        '${AaspasApi.baseUrl}${AaspasApi.getShopsByCategory}$paramString';
+    final url = '${AaspasApi.baseUrl}${AaspasApi.getAllShops}$paramString';
 
     // final url =
     //     'https://api-246icbhmiq-uc.a.run.app/user/getAllShopss?lng=75.913898&lat=22.733255&page=$currentPage&pageSize=$pageSize';
@@ -66,6 +66,26 @@ class _ShopListSliverNearbyState extends State<ShopListSliverNearby> {
     super.initState();
     fetchShops();
   }
+
+  ///////////////////////////////////////////////////////////////
+  // Open Google Map and redirect to that location
+
+  void openMap({required String latt, required String longg}) async {
+    final Uri mapUri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$latt,$longg',
+    );
+
+    if (await canLaunchUrl(mapUri)) {
+      await launchUrl(
+        mapUri,
+        mode: LaunchMode.externalApplication,
+      ); // Opens in Google Maps app or browser
+    } else {
+      throw 'Could not launch Google Maps.';
+    }
+  }
+
+  ////////////////////////////////////////////////////////////
 
   @override
   Widget build(BuildContext context) {
@@ -106,8 +126,23 @@ class _ShopListSliverNearbyState extends State<ShopListSliverNearby> {
             ///////////////////////////////////////
             if (index < shopList.length) {
               return ShopCard(
+                locLat: shopList[index].location!.coordinates![1].toString(),
+                locLong: shopList[index].location!.coordinates![0].toString(),
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    "/shop_details",
+                    arguments: {"sid": "${shopList[index].sId}"},
+                  );
+                },
+                onDirectionTap: ({
+                  required String lat1,
+                  required String long1,
+                }) {
+                  openMap(latt: lat1, longg: long1); // your existing function
+                },
                 edgeInsets: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                image: "${shopList[index].bigImageUrl}",
+                image: shopList[index].bigImageUrl ?? AaspasImages.shopAltImage,
                 shopName: "${shopList[index].shopName}",
                 shopAddress: "${shopList[index].address}",
                 currentDistance:

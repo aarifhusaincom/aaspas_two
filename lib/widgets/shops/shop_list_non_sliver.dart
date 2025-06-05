@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:aaspas/constant_and_api/aaspas_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../../widgets/shop_card.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'shop_card.dart';
 
 import '../../model/shop_model.dart';
 
@@ -92,7 +93,25 @@ class _ShopListNonSliverState extends State<ShopListNonSliver> {
     if (noDataFound) {
       return Center(child: Text("No Data Found"));
     }
+    ///////////////////////////////////////////////////////////////
+    // Open Google Map and redirect to that location
 
+    void openMap({required String latt, required String longg}) async {
+      final Uri mapUri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$latt,$longg',
+      );
+
+      if (await canLaunchUrl(mapUri)) {
+        await launchUrl(
+          mapUri,
+          mode: LaunchMode.externalApplication,
+        ); // Opens in Google Maps app or browser
+      } else {
+        throw 'Could not launch Google Maps.';
+      }
+    }
+
+    ////////////////////////////////////////////////////////////
     return ListView.separated(
       controller: _scrollController,
       itemCount: shopList.length + (isLastPage ? 0 : 1),
@@ -100,12 +119,24 @@ class _ShopListNonSliverState extends State<ShopListNonSliver> {
         if (index < shopList.length) {
           // final item = shopList[index];
           return ShopCard(
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                "/shop_details",
+                arguments: {"sid": "${shopList[index].sId}"},
+              );
+            },
+            onDirectionTap: ({required String lat1, required String long1}) {
+              openMap(latt: lat1, longg: long1); // your existing function
+            },
             edgeInsets: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
             image: "${shopList[index].bigImageUrl}",
             shopName: "${shopList[index].shopName}",
             shopAddress: "${shopList[index].address}",
             currentDistance:
                 "${shopList[index].distanceKm!.toStringAsFixed(2) ?? 0.00} KM",
+            locLat: shopList[index].location!.coordinates![1].toString(),
+            locLong: shopList[index].location!.coordinates![0].toString(),
           );
         } else {
           return Center(

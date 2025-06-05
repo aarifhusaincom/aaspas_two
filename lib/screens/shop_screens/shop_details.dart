@@ -9,20 +9,20 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../constant_and_api/aaspas_constant.dart';
-import '../../widgets/appbar_only_back.dart';
-import '../../widgets/buttons/custom_button.dart';
-import '../../widgets/chips/category_chip.dart';
-import '../../widgets/week_days/week_day_letter.dart';
+import '../../../constant_and_api/aaspas_constant.dart';
+import '../../widgets/app_and_search_bar/appbar_only_back.dart';
+import '../../../widgets/buttons/custom_button.dart';
+import '../../../widgets/chips/category_chip.dart';
+import '../../../widgets/week_days/week_day_letter.dart';
 
-import '../widgets/chips/item_chip.dart';
-import '../widgets/label_card.dart';
+import '../../widgets/chips/item_chip.dart';
+import '../../widgets/cat_type_and_cards/label_card.dart';
 
-import '../widgets/shops/shop_list_sliver.dart';
+import '../../widgets/shops/shop_list_sliver.dart';
 
 class ShopDetailsPage extends StatefulWidget {
-  const ShopDetailsPage({super.key, this.id = '67447ad7ee94dd497972078d'});
-  final String id;
+  const ShopDetailsPage({super.key});
+  // final String id;
   @override
   State<ShopDetailsPage> createState() => _ShopDetailsPageState();
 }
@@ -37,6 +37,8 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
     if (newShopId == currentShopId) return;
 
     currentShopId = newShopId;
+    print("//////////////////////////// load new method");
+    print(currentShopId);
     _scrollController.animateTo(
       0,
       duration: const Duration(milliseconds: 400),
@@ -57,16 +59,14 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
 
   bool dataLoaded = false;
 
-  List<String> newImageLinks = [];
   //////////////////////////////////////////////////
 
+  List featuredCategoryDetails = [];
+  List othersCategories = [];
   List featuredItems = [];
   List otherItems = [];
-  List featuredCategoryDetails = [];
-
-  List othersCategories = [];
   Future<void> getShopsCatItems() async {
-    currentShopId = widget.id;
+    print("///////////////// getShopsCatItems() called");
     /////////////////////////////////////
     final String paramString = '?id=$currentShopId';
     final url = '${AaspasApi.baseUrl}${AaspasApi.getShopsCatItems}$paramString';
@@ -76,12 +76,18 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
-      featuredItems = jsonData['items'][0]['featuredItems'];
-      otherItems = jsonData['items'][0]['otherItems'];
+      featuredItems = jsonData['items'][0]['featuredItems'] ?? [];
+      otherItems = jsonData['items'][0]['otherItems'] ?? [];
 
       featuredCategoryDetails =
-          jsonData['category'][0]['featuredCategoryDetails'];
-      othersCategories = jsonData['category'][0]['otherCategoryDetails'];
+          jsonData['category'][0]['featuredCategoryDetails'] ?? [];
+      othersCategories = jsonData['category'][0]['otherCategoryDetails'] ?? [];
+      print("//////////////////////////// featuredCategories");
+      print(featuredCategories);
+      print(othersCategories);
+      print(featuredItems);
+      print(otherItems);
+      print(openTime);
       setState(() {});
     }
   }
@@ -90,10 +96,13 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
   String video = '';
 
   List shopImages = [];
+  List<String> newImageLinks = [];
   List workingDays = [];
-  List<String> featuredCategories = [];
+  List<dynamic> featuredCategories = [];
   String shopName = "";
   String address = "";
+  double lat = 0;
+  double long = 0;
   String area = "";
   String phoneNo = "";
   String openTime = "";
@@ -106,7 +115,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
   int active = 0;
   double distanceKm = 0;
   Future<void> fetchShopDetailsById() async {
-    // print("fetchShopDetailsById() Runs");
+    print("///////////////// fetchShopDetailsById() called");
     /////////////////////////////////////
     final String paramString =
         '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&id=$currentShopId';
@@ -125,12 +134,17 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
       shopName = jsonData['items'][0]['shopName'].toString();
       // print(shopName);
       address = jsonData['items'][0]['address'].toString();
+      lat = jsonData['items'][0]['location']['coordinates'][1];
+      long = jsonData['items'][0]['location']['coordinates'][0];
       area = jsonData['items'][0]['area'].toString();
       // TODO: Handle video. and remove the default link
       video =
           jsonData['items'][0]['video'] ??
           'https://github.com/aarifhusainwork/aaspas-storage-assets/raw/refs/heads/main/IndoreInstagram/other_reels/reels/1.mp4';
-      phoneNo = jsonData['items'][0]['phoneNo'].toString();
+      phoneNo =
+          (jsonData['items'][0]['phoneNo'] == null)
+              ? '8884446009'
+              : jsonData['items'][0]['phoneNo'].toString();
       openTime = jsonData['items'][0]['openTime'].toString();
       closeTime = jsonData['items'][0]['closeTime'].toString();
       pinCode = jsonData['items'][0]['pincode'];
@@ -138,46 +152,92 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
       showPhoneNumber = jsonData['items'][0]['showPhoneNumber'];
       verified = jsonData['items'][0]['verified'];
       showItemType = jsonData['items'][0]['showItemType'];
-      active = jsonData['items'][0]['active'];
+      active = jsonData['items'][0]['active'] ?? 0;
       distanceKm = jsonData['items'][0]['distanceKm'];
       workingDays = jsonData['items'][0]['workingDays'] ?? [];
       featuredCategories = jsonData['items'][0]['featuredCategories'] ?? [];
 
+      print("///////////////////////////////////////////All shop Deails");
+      // print(shopImages.isEmpty);
+      // print(shopName);
+      // print(address);
+      // print(lat);
+      // print(long);
+      // print(area);
+      // print(video);
+      // print(phoneNo);
+      // print(openTime);
+      // print(closeTime);
+      // print(pinCode);
+      // print(shopNo);
+      // print(showPhoneNumber);
+      // print(verified);
+      // print(showItemType);
+      // print(active);
+      // print(distanceKm);
+      // print(workingDays.join(","));
+      // print(featuredCategories.join(","));
+
       if (shopImages.isEmpty) {
         newImageLinks = [];
+        setState(() {
+          LocationSetterAaspas.getLocation();
+          // print(dataLoaded);
+          dataLoaded = true;
+          // print(dataLoaded);
+        });
       } else {
-        newImageLinks = List.generate(5, (index) => shopImages[index]['url']);
-        print("///////////////////////////////////////////print 2");
-        print(video);
+        newImageLinks = List.generate(
+          shopImages.length,
+          // TODO: null exception chacha chai response does not have url key
+          (index) => shopImages[index]['url'] ?? AaspasImages.shopAltImage,
+        );
+        print("///////////////////////////////////////////newImageLinks");
+        // print(newImageLinks.join(","));
+        setState(() {
+          LocationSetterAaspas.getLocation();
+          // print(dataLoaded);
+          dataLoaded = true;
+          // print(dataLoaded);
+        });
       }
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
+  // @override
+  // void initState() {
+  //   print("/////////////// init called");
+  //   super.initState();
+  // }
 
-    getShopsCatItems();
-    // .then((_) {
-    // setState(() {}); // Trigger rebuild to reflect data
-    // });
-    fetchShopDetailsById().then((_) {
-      isShopOpenNow = isShopOpen(
-        openTimeStr: openTime,
-        closeTimeStr: closeTime,
-      );
-      setState(() {
-        LocationSetterAaspas.getLocation();
-        // print(dataLoaded);
-        dataLoaded = true;
-        // print(dataLoaded);
-      });
-    });
+  dynamic data;
+  String? sid;
+  @override
+  void didChangeDependencies() {
+    LocationSetterAaspas();
+    print("/////////////// didChangeDependencies called");
+    if (data == null) {
+      final args = ModalRoute.of(context)!.settings.arguments;
+      if (args != null && args is Map<String, dynamic>) {
+        data = args;
+        sid = data?['sid'];
+        currentShopId = sid!;
+        fetchShopDetailsById().then((_) {
+          isShopOpenNow = isShopOpen(
+            openTimeStr: openTime,
+            closeTimeStr: closeTime,
+          );
+        });
+        getShopsCatItems();
+      }
+    }
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
   }
 
   /////////////////////////////////////////////////////
   String cleanTimeString(String input) {
-    print("/////////////////////////////////////");
+    print("///////////////////////////////////// clean Time called");
     print(input);
     return input
         .replaceAll('\u202F', ' ') // narrow no-break space
@@ -187,6 +247,9 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
   }
 
   bool isShopOpen({required String openTimeStr, required String closeTimeStr}) {
+    print("///////////////////////////////////// isShopOpen called");
+    print(openTimeStr);
+    print(closeTimeStr);
     final now = DateTime.now();
     // final format = DateFormat.jm(); // e.g., "11:00 AM"
     final format = DateFormat("hh:mm a"); // e.g., "11:00 AM"
@@ -229,6 +292,47 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
   }
 
   ///////////////////////////////////////////////////////////////
+  // Open Google Map and redirect to that location
+
+  void openMap() async {
+    final Uri mapUri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$lat,$long',
+    );
+
+    if (await canLaunchUrl(mapUri)) {
+      await launchUrl(
+        mapUri,
+        mode: LaunchMode.externalApplication,
+      ); // Opens in Google Maps app or browser
+    } else {
+      throw 'Could not launch Google Maps.';
+    }
+  }
+
+  ////////////////////////////////////////////////////////////
+
+  ///------- today() Start-------///
+  String today() {
+    final now = DateTime.now();
+    const weekdays = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+    return weekdays[now.weekday - 1];
+  }
+
+  ///------- today() End-------///
+  ///------- isTodayOff() Start-------///
+  bool isTodayOff(List<String> workingDays) {
+    return !workingDays.contains(today());
+  }
+
+  ///------- isTodayOff() End-------///
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
@@ -247,6 +351,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
       appBar: AppbarOnlyBack(title: "Shop Details"),
       backgroundColor: AaspasColors.white,
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
@@ -260,6 +365,23 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                     spacing: 10,
                     runSpacing: 20,
                     children: [
+                      // Container(
+                      //   constraints: BoxConstraints(
+                      //     maxWidth:
+                      //         orientation == Orientation.portrait
+                      //             ? (currentSize.width - 35)
+                      //             : 300,
+                      //     maxHeight:
+                      //         orientation == Orientation.portrait
+                      //             ? (currentSize.width - 35)
+                      //             : 300,
+                      //   ),
+                      //   clipBehavior: Clip.hardEdge,
+                      //   decoration: BoxDecoration(
+                      //     color: Colors.purple,
+                      //     borderRadius: BorderRadius.circular(16),
+                      //   ),
+                      // ),
                       Container(
                         constraints: BoxConstraints(
                           maxWidth:
@@ -283,7 +405,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                   onTap: () {
                                     Navigator.pushNamed(
                                       context,
-                                      '/Shop_video_player',
+                                      '/single_video_player',
                                       arguments: {'video': video},
                                     );
                                   },
@@ -308,6 +430,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                           ],
                         ),
                       ),
+                      //Shop Name and Details
                       Container(
                         constraints: BoxConstraints(
                           maxWidth:
@@ -507,6 +630,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                     ),
                                   ),
                                   LabelCard(
+                                    onTap: openMap,
                                     constraints: BoxConstraints(
                                       maxWidth: 170,
                                       minWidth: 170,
@@ -897,26 +1021,63 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                             if (index <
                                                 featuredCategoryDetails
                                                     .length) {
-                                              return CategoryChip(
-                                                catName:
-                                                    featuredCategoryDetails[index]['category_name'] ??
-                                                    '',
-                                                imageUrl:
-                                                    featuredCategoryDetails[index]['category_image'] ??
-                                                    '',
+                                              return InkWell(
+                                                onTap: () {
+                                                  Navigator.pushNamed(
+                                                    context,
+                                                    '/cat_item_wise',
+                                                    arguments: {
+                                                      'id':
+                                                          featuredCategoryDetails[index]['_id'],
+                                                      'name':
+                                                          featuredCategoryDetails[index]['category_name'],
+                                                      "imageUrl":
+                                                          featuredCategoryDetails[index]['category_image'],
+                                                      'categoryType': 'shops',
+                                                      'cardType': 'category',
+                                                    },
+                                                  );
+                                                },
+
+                                                child: CategoryChip(
+                                                  catName:
+                                                      featuredCategoryDetails[index]['category_name'] ??
+                                                      '',
+                                                  imageUrl:
+                                                      featuredCategoryDetails[index]['category_image'] ??
+                                                      '',
+                                                ),
                                               );
                                             } else {
                                               final adjustedIndex =
                                                   index -
                                                   featuredCategoryDetails
                                                       .length;
-                                              return CategoryChip(
-                                                catName:
-                                                    othersCategories[adjustedIndex]['category_name'] ??
-                                                    '',
-                                                imageUrl:
-                                                    othersCategories[adjustedIndex]['category_image'] ??
-                                                    '',
+                                              return InkWell(
+                                                onTap: () {
+                                                  Navigator.pushNamed(
+                                                    context,
+                                                    '/cat_item_wise',
+                                                    arguments: {
+                                                      'id':
+                                                          othersCategories[adjustedIndex]['_id'],
+                                                      'name':
+                                                          othersCategories[adjustedIndex]['category_name'],
+                                                      "imageUrl":
+                                                          othersCategories[adjustedIndex]['category_image'],
+                                                      'categoryType': 'shops',
+                                                      'cardType': 'category',
+                                                    },
+                                                  );
+                                                },
+                                                child: CategoryChip(
+                                                  catName:
+                                                      othersCategories[adjustedIndex]['category_name'] ??
+                                                      '',
+                                                  imageUrl:
+                                                      othersCategories[adjustedIndex]['category_image'] ??
+                                                      '',
+                                                ),
                                               );
                                             }
                                           },
@@ -950,37 +1111,39 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
               ),
             ),
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 2,
-              ),
-              child: Container(
-                alignment: Alignment.centerLeft,
-                // color: Colors.purple,
-                // height: 40,
-                width: double.infinity,
-                child: Text(
-                  "Related Shop Near By",
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.roboto(
-                    textStyle: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
+          if (featuredCategories.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 2,
+                ),
+                child: Container(
+                  alignment: Alignment.centerLeft,
+                  // color: Colors.purple,
+                  // height: 40,
+                  width: double.infinity,
+                  child: Text(
+                    "Related Shop Near By",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.roboto(
+                      textStyle: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          ShopListSliver(
-            shopId: currentShopId,
-            featuredCatIds: featuredCategories,
-            onTapShopCard: loadNewShop,
-          ),
+          if (featuredCategories.isNotEmpty)
+            ShopListSliver(
+              shopId: currentShopId,
+              featuredCatIds: featuredCategories,
+              onTapShopCard: loadNewShop,
+            ),
         ],
       ),
     );

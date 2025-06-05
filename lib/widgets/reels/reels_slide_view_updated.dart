@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:aaspas/constant_and_api/aaspas_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../../widgets/reel_card.dart';
+import 'reel_card.dart';
 
-import '../model/reel_model.dart';
+import '../../model/reel_model.dart';
 
 class ReelsSlideView extends StatefulWidget {
   const ReelsSlideView({super.key});
@@ -18,7 +18,7 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
   //////////////////////////////////////////////////
   List<Items> reelList = [];
   int currentPage = 1;
-  int pageSize = 63;
+  int pageSize = 20;
   bool isLastPage = false;
   bool noDataFound = false;
   int maxListCount = 1000;
@@ -28,7 +28,7 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
   Future<void> fetchReels() async {
     final String paramString =
         '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize';
-    final url = '${AaspasApi.baseUrl}user/getAllReels$paramString';
+    final url = '${AaspasApi.baseUrl}${AaspasApi.getAllReels}$paramString';
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
@@ -37,7 +37,10 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
 
       final newItems = model.items ?? [];
       if (newItems.isEmpty) {
-        noDataFound = true;
+        if (reelList.isEmpty) {
+          noDataFound = true;
+        }
+        isLastPage = newItems.length < pageSize;
       }
 
       ////////////////////
@@ -52,6 +55,9 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
 
         print("/////////////////////////////// new Item Length");
         print(newItems.length);
+
+        print("/////////////////////////// Current Reel List item Count");
+        print(reelList.length);
 
         isLastPage = newItems.length < pageSize;
 
@@ -143,6 +149,7 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
                 ///////////////////////////////////////
                 if (index < reelList.length) {
                   return ReelCard(
+                    reelIndex: index,
                     thumbnailUrl: "${reelList[index].thumbnailUrl}",
                   );
                 } else {

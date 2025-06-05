@@ -51,6 +51,8 @@ class AaspasImages {
 
   // Cards Images on HomePage
   static String shops = "assets/images/category_type_cards/Shops.png";
+  static String shopAltImage =
+      "https://raw.githubusercontent.com/aarifhusainwork/aaspas-storage-assets/refs/heads/main/AppWizard/AltImages/ShopAltImage.png";
   static String serviceProvider =
       "assets/images/category_type_cards/Service Provider.png";
   static String property = "assets/images/category_type_cards/Property.png";
@@ -84,15 +86,15 @@ class AaspasApi {
   static String getAllShops = "user/getAllShopss";
   static String getShopsByCategory = "user/getShopsByCategory";
   static String getShopsByItem = "user/getShopsByItem";
-  static String getAllReels =
-      'user/getAllReels?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=1&pageSize=27';
+  static String getRelatedShops = "user/getRelatedShops";
+  static String getAllReels = 'user/getAllReels';
   static String getAllCategories = 'user/getUserCategoriess';
   static String getShopsDetailsById = 'user/getShopsDetailsById';
   static String getShopsCatItems = 'user/getShopsCatItems';
-  static String getServicesByCategory =
-      'user/getServicesByCategory?page=1&pageSize=20&categoryId=6751965996e15298c8c8ac1a&lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}';
-  static String getServicesDetailsById =
-      'user/getServicesDetailsById?id=678226a0f2c41fdf46fc84f5&lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}';
+
+  ////// Service
+  static String getServicesByCategory = 'user/getServicesByCategory';
+  static String getServicesDetailsById = 'user/getServicesDetailsById';
 
   ////// Property
   static String getPropertiesByCategoryId = 'prop/getPropertiesByCategoryId';

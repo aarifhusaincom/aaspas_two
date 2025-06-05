@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
-import '../constant_and_api/aaspas_constant.dart';
+import '../../constant_and_api/aaspas_constant.dart';
 
 class AaspasSearchBar extends StatelessWidget {
-  const AaspasSearchBar({super.key, this.isEnabled = false});
+  const AaspasSearchBar({
+    super.key,
+    required this.isEnabled,
+    this.focusNode,
+    this.controller,
+  });
   final bool isEnabled;
+  final FocusNode? focusNode;
+  final TextEditingController? controller;
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +29,15 @@ class AaspasSearchBar extends StatelessWidget {
           color: Colors.white,
           child: InkWell(
             onTap: () {
-              // Navigator.pushNamed(context, "/reelsPlayer");
+              Navigator.pushNamed(context, "/search_page");
             },
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: Center(
                 child: TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  autofocus: false, // use requestFocus instead of this
                   textAlign: TextAlign.left,
                   maxLines: 1,
                   enabled: isEnabled,

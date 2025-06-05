@@ -1,25 +1,25 @@
-// import 'dart:convert';
 import 'dart:core';
-import 'package:aaspas/functions/location/LocationSetterAaspas.dart';
-import 'package:aaspas/screens/dummy_class_aarif.dart';
-import 'package:aaspas/screens/property_details.dart';
-import 'package:aaspas/screens/property_screens/property_video_player.dart';
+
+import 'package:aaspas/screens/property_screens/property_details.dart';
+import 'package:aaspas/screens/property_screens/single_video_player.dart';
+import 'package:aaspas/screens/search_screens/search_page_property_wise.dart';
+import 'package:aaspas/screens/search_screens/search_page_service_wise.dart';
+import 'package:aaspas/screens/search_screens/search_page_shop_wise.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../widgets/image_slider/image_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
+
 import 'package:google_fonts/google_fonts.dart';
 import '../../reels/reel_builder.dart';
-import '../../screens/cat_item_wise.dart';
+import 'screens/search_screens/cat_item_wise.dart';
 import '../../screens/homepage.dart';
 import '../../screens/location_permission.dart';
 import '../../screens/other_screens/location_denied.dart';
-import '../../screens/search_page.dart';
-import '../../screens/service_details.dart';
-import '../../screens/shop_details.dart';
+import 'screens/search_screens/search_page.dart';
+import 'screens/service_screens/service_details.dart';
+import 'screens/shop_screens/shop_details.dart';
 import 'hive/boxes.dart';
 import 'hive/userisold.dart';
 
@@ -87,6 +87,9 @@ class MyApp extends StatelessWidget {
       routes: {
         '/homepage': (context) => Homepage(),
         '/search_page': (context) => SearchPage(),
+        '/search_page_shop_wise': (context) => SearchPageShopWise(),
+        '/search_page_service_wise': (context) => SearchPageServiceWise(),
+        '/search_page_property_wise': (context) => SearchPagePropertyWise(),
         '/shop_details': (context) => ShopDetailsPage(),
         '/video_scroll_screen': (context) => VideoScrollScreen(),
         '/cat_item_wise': (context) => CatItemWise(),
@@ -95,7 +98,7 @@ class MyApp extends StatelessWidget {
         '/location_denied': (context) => LocationDenied(),
         '/image_slider': (context) => ImageSlider(),
         '/property_details': (context) => PropertyDetailsPage(),
-        '/property_video_player': (context) => PropertyVideoPlayer(),
+        '/single_video_player': (context) => SingleVideoPlayer(),
         // '/search_focused': (context) => ShopDetails(),
         // '/search_typed': (context) => ShopDetails(),
       },

@@ -3,8 +3,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import '../../constant_and_api/aaspas_constant.dart';
-import '../../widgets/shop_card.dart';
+import 'shop_card.dart';
 
 import '../../model/shop_model.dart';
 
@@ -15,7 +16,7 @@ class ShopListSliver extends StatefulWidget {
     required this.featuredCatIds,
     this.onTapShopCard,
   });
-  final List<String> featuredCatIds;
+  final List<dynamic> featuredCatIds;
   final String shopId;
   final void Function(String shopId)? onTapShopCard;
 
@@ -26,6 +27,7 @@ class ShopListSliver extends StatefulWidget {
 class _ShopListSliverState extends State<ShopListSliver> {
   //////////////////////////////////////////////////
   List<Items> shopList = [];
+  List<Items> newItems = [];
   int currentPage = 1;
   final int pageSize = 50;
   bool isLastPage = false;
@@ -36,21 +38,20 @@ class _ShopListSliverState extends State<ShopListSliver> {
   //////////////////////////////////////////////////
   Future<void> fetchShops() async {
     final String paramString =
-        '?featureCategoryId=${widget.featuredCatIds.join(',')}lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize';
-    final url =
-        '${AaspasApi.baseUrl}${AaspasApi.getShopsByCategory}$paramString';
+        '?featureCategoryId=${widget.featuredCatIds.join(',')}&lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize';
+    final url = '${AaspasApi.baseUrl}${AaspasApi.getRelatedShops}$paramString';
 
-    // final url =
-    //     'https://api-246icbhmiq-uc.a.run.app/user/getAllShopss?lng=75.913898&lat=22.733255&page=$currentPage&pageSize=$pageSize';
-    // https://api-246icbhmiq-uc.a.run.app/user/getRelatedShops?featureCategoryId=67664e11f4ba7c1a43dcc92a,66893e0599cf4b887b496af6,67738f0d0d1fbaecf3b34bde&lat=22.734947954439914&lng=75.90894186451176&page=1&pageSize=20
+    print(url);
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
       final model = ShopModel.fromJson(jsonData);
 
-      final newItems = model.items ?? [];
+      newItems = model.items ?? [];
       if (newItems.isEmpty) {
+        print("///////////// No new Shop found");
+        print(newItems.length);
         noDataFound = true;
       }
 
@@ -65,16 +66,33 @@ class _ShopListSliverState extends State<ShopListSliver> {
       });
       ////////////
     }
-
-    //////////////////////////////////////////////////
   }
+  //////////////////////////////////////////////////
 
   @override
   void initState() {
     super.initState();
     fetchShops();
   }
+  ///////////////////////////////////////////////////////////////
+  // Open Google Map and redirect to that location
 
+  void openMap({required String latt, required String longg}) async {
+    final Uri mapUri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$latt,$longg',
+    );
+
+    if (await canLaunchUrl(mapUri)) {
+      await launchUrl(
+        mapUri,
+        mode: LaunchMode.externalApplication,
+      ); // Opens in Google Maps app or browser
+    } else {
+      throw 'Could not launch Google Maps.';
+    }
+  }
+
+  ////////////////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
     return noDataFound
@@ -113,7 +131,7 @@ class _ShopListSliverState extends State<ShopListSliver> {
             }
             ///////////////////////////////////////
             if (index < shopList.length) {
-              if (widget.shopId != shopList[index].sId) {
+              if (widget.shopId == shopList[index].sId) {
                 return SizedBox(height: 0);
               }
               return InkWell(
@@ -121,6 +139,14 @@ class _ShopListSliverState extends State<ShopListSliver> {
                   widget.onTapShopCard!(shopList[index].sId!);
                 },
                 child: ShopCard(
+                  onDirectionTap: ({
+                    required String lat1,
+                    required String long1,
+                  }) {
+                    openMap(latt: lat1, longg: long1); // your existing function
+                  },
+                  locLat: shopList[index].location!.coordinates![1].toString(),
+                  locLong: shopList[index].location!.coordinates![0].toString(),
                   edgeInsets: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   image: "${shopList[index].bigImageUrl}",
                   shopName: "${shopList[index].shopName}",

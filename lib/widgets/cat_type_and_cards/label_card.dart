@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../constant_and_api/aaspas_constant.dart';
+import '../../constant_and_api/aaspas_constant.dart';
 
 class LabelCard extends StatelessWidget {
   const LabelCard({

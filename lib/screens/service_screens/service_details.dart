@@ -6,12 +6,17 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
-import '../../widgets/appbar_only_back.dart';
+import 'package:flutter/services.dart';
+import 'package:lottie/lottie.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../widgets/app_and_search_bar/appbar_only_back.dart';
 
-import '../constant_and_api/aaspas_constant.dart';
-import '../widgets/buttons/custom_button.dart';
-import '../widgets/label_card.dart';
-import '../widgets/shops/services_list_sliver.dart';
+import '../../constant_and_api/aaspas_constant.dart';
+import '../../functions/location/LocationSetterAaspas.dart';
+import '../../widgets/buttons/custom_button.dart';
+import '../../widgets/cat_type_and_cards/label_card.dart';
+import '../../widgets/shops/services_list_sliver.dart';
 
 class ServiceDetails extends StatefulWidget {
   const ServiceDetails({super.key});
@@ -21,6 +26,27 @@ class ServiceDetails extends StatefulWidget {
 }
 
 class _ServiceDetailsState extends State<ServiceDetails> {
+  bool dataLoaded = false;
+  //------for same page refresh----- starts //
+  final ScrollController _scrollController = ScrollController();
+  late String currentShopId;
+
+  /// load new property method
+  void loadNewService(String newServiceId) {
+    if (newServiceId == currentShopId) return;
+    dataLoaded = false;
+    currentShopId = newServiceId;
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOut,
+    );
+
+    setState(() {});
+    getServicesDetailsById();
+  }
+
+  //------for same page refresh----- ends //
   ///////////////////////////////////////////////
   launchURL(String url) async {
     if (await canLaunch(url)) {
@@ -42,15 +68,20 @@ class _ServiceDetailsState extends State<ServiceDetails> {
   String imgUrl = "";
   String phone = "";
   /////////////////////////////////////////////////////////////
-  Future<void> getShopsCatItems() async {
-    final url = AaspasApi.getServicesDetailsById;
+  Future<void> getServicesDetailsById() async {
+    final String paramString =
+        '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&id=$currentShopId';
+
+    final url =
+        '${AaspasApi.baseUrl}${AaspasApi.getServicesDetailsById}$paramString';
+
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
       setState(() {
+        dataLoaded = true;
         servicesDetailsJson = jsonData['items'][0];
-
         karigarName = servicesDetailsJson['karigar_name'].toString();
         imgUrl = servicesDetailsJson['image'].toString();
         catName = servicesDetailsJson['categoryName'].toString();
@@ -59,27 +90,71 @@ class _ServiceDetailsState extends State<ServiceDetails> {
         age = servicesDetailsJson['age'].toString();
         description = servicesDetailsJson['description'].toString();
         phone = servicesDetailsJson['phoneNo'].toString();
+        print("////////////////////////// karigar Details");
+        print(karigarName);
+        print(imgUrl);
+        print(catName);
+        print(area);
+        print(minCharge);
+        print(age);
+        print(description);
+        print(phone);
       });
     }
   }
 
+  late Future<void> _fetchDetails;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    getShopsCatItems();
+    LocationSetterAaspas();
+    _fetchDetails = getServicesDetailsById();
   }
 
-  /////////////////////////////////////////////////////////////
+  ///////// received data from route arguments Starts/////////
+  dynamic data;
+  String? sid;
+  bool _hasFetched = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasFetched) {
+      final args = ModalRoute.of(context)!.settings.arguments;
+      if (args != null && args is Map<String, dynamic>) {
+        data = args;
+        sid = data?['sid'];
+        currentShopId = sid!;
+        // print('/////////////////////// Data received at service_details');
+        // print(sid);
+        _hasFetched = true;
+        getServicesDetailsById();
+      }
+    }
+  }
+
+  ///////// received data from route arguments Ends/////////
+  String getShareText() {
+    return '5';
+  }
+
   @override
   Widget build(BuildContext context) {
+    // final orientation = MediaQuery.of(context).orientation;
+    // final currentSize = MediaQuery.of(context).size;
+
     if (servicesDetailsJson == null) {
+      return Scaffold(body: const Center(child: CircularProgressIndicator()));
+    }
+    if (!dataLoaded) {
       return Scaffold(body: const Center(child: CircularProgressIndicator()));
     }
     return Scaffold(
       backgroundColor: AaspasColors.white,
       appBar: AppbarOnlyBack(title: "Service Details"),
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
@@ -152,7 +227,15 @@ class _ServiceDetailsState extends State<ServiceDetails> {
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(17),
-                              child: CachedNetworkImage(imageUrl: imgUrl),
+                              child: CachedNetworkImage(
+                                imageUrl: imgUrl,
+                                fit: BoxFit.cover,
+                                errorWidget:
+                                    (context, url, error) => Image.asset(
+                                      fit: BoxFit.cover,
+                                      AaspasImages.shopPlaceholder,
+                                    ),
+                              ),
                             ),
                           ),
                         ),
@@ -187,78 +270,99 @@ class _ServiceDetailsState extends State<ServiceDetails> {
                         ),
                       ),
                       // Halwai , Khajrana , copy , share
-                      SizedBox(
-                        height: 50,
-                        // color: AaspasColors.softAccentBg,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Row(
-                              spacing: 10,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                LabelCard(
-                                  decoration: BoxDecoration(
-                                    color: AaspasColors.soft2,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  title: catName,
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 0),
 
-                                  fontSize: 13,
-                                  horizontalPadding: 10,
-                                  color: AaspasColors.black,
-                                  bgColor: AaspasColors.soft2,
-                                  spacing: 10,
-                                  showIcon: false,
-                                  iconSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                LabelCard(
-                                  decoration: BoxDecoration(
-                                    color: AaspasColors.soft2,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  title: "Khajrana",
-                                  fontSize: 13,
-                                  horizontalPadding: 10,
-                                  color: AaspasColors.black,
-                                  bgColor: AaspasColors.soft2,
-                                  spacing: 10,
-                                  showIcon: false,
-                                  iconSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ],
+                        // color: Colors.lightGreenAccent,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          spacing: 10,
+                          children: [
+                            LabelCard(
+                              decoration: BoxDecoration(
+                                color: AaspasColors.soft2,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              title: "Flat",
+                              fontSize: 15,
+                              horizontalPadding: 10,
+                              color: AaspasColors.black,
+                              bgColor: AaspasColors.soft2,
+                              spacing: 0,
+                              showIcon: false,
+                              iconSize: 0,
+                              fontWeight: FontWeight.w600,
                             ),
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              spacing: 22,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.copy_all_outlined,
-                                  size: 25,
-                                  color: AaspasColors.primary,
-                                ),
-                                LabelCard(
-                                  decoration: BoxDecoration(
-                                    color: AaspasColors.white,
-                                    borderRadius: BorderRadius.circular(4),
+                            LabelCard(
+                              decoration: BoxDecoration(
+                                color: AaspasColors.soft2,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              title: area,
+                              fontSize: 15,
+                              horizontalPadding: 10,
+                              color: AaspasColors.black,
+                              bgColor: AaspasColors.soft2,
+                              spacing: 0,
+                              showIcon: false,
+                              iconSize: 0,
+                              fontWeight: FontWeight.w600,
+                            ),
+
+                            Flexible(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.max,
+                                spacing: 22,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  InkWell(
+                                    onTap: () async {
+                                      final text = getShareText();
+                                      await Clipboard.setData(
+                                        ClipboardData(text: text),
+                                      );
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            "Property details copied to clipboard",
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Icon(
+                                      Icons.copy_all_outlined,
+                                      size: 25,
+                                      color: AaspasColors.primary,
+                                    ),
                                   ),
-                                  title: "Share",
-                                  fontSize: 15,
-                                  horizontalPadding: 10,
-                                  color: AaspasColors.primary,
-                                  bgColor: AaspasColors.white,
-                                  spacing: 10,
-                                  showIcon: true,
-                                  iconPath: AaspasIcons.shareShop,
-                                  iconSize: 25,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ],
+                                  LabelCard(
+                                    onTap: () {
+                                      Share.share('23');
+                                    },
+                                    constraints: BoxConstraints(
+                                      minWidth: 100,
+                                      maxWidth: 100,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AaspasColors.white,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    title: "Share",
+                                    fontSize: 15,
+                                    horizontalPadding: 10,
+                                    color: AaspasColors.primary,
+                                    spacing: 10,
+                                    showIcon: true,
+                                    iconPath: AaspasIcons.shareShop,
+                                    iconSize: 25,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -299,11 +403,14 @@ class _ServiceDetailsState extends State<ServiceDetails> {
                             CustomButton(
                               onPressed: () async {
                                 // print("WhatsApp Clicked");
-                                var url =
-                                    'https://api.whatsapp.com/send?phone=91$phone&text=_*Aaspas+Hello*_';
-                                // launch(url);
-                                if (await canLaunch(url)) {
-                                  await launch(url);
+                                final uri = Uri.parse(
+                                  'https://api.whatsapp.com/send?phone=91$phone&text=_*Aaspas+Hello*_',
+                                );
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(
+                                    uri,
+                                    mode: LaunchMode.externalApplication,
+                                  );
                                 }
                               },
                               svgPicture: SvgPicture.asset(
@@ -402,31 +509,40 @@ class _ServiceDetailsState extends State<ServiceDetails> {
                           ),
                         ),
                       ),
+
                       // Sliver Heading Other Halwai in Khajrana
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        // color: Colors.purple,
-                        child: Text(
-                          "Other $catName in $area",
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.roboto(
-                            textStyle: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
-                  // SizedBox(),
                 ],
               ),
             ),
           ),
-          ServicesListSliver(id: servicesDetailsJson['_id'].toString()),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+              child: Container(
+                alignment: Alignment.centerLeft,
+                // color: Colors.purple,
+                child: Text(
+                  "Other $catName in $area",
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.roboto(
+                    textStyle: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          ServicesListSliver(
+            categoryId: servicesDetailsJson['categoryId'].toString(),
+            serviceId: sid,
+            onServiceTap: loadNewService,
+          ),
         ],
       ),
     );

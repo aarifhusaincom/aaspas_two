@@ -7,13 +7,13 @@ import 'package:video_player/video_player.dart';
 import '../../constant_and_api/aaspas_constant.dart';
 import '../../reels/reel_cache.dart';
 
-class PropertyVideoPlayer extends StatefulWidget {
-  const PropertyVideoPlayer({super.key});
+class SingleVideoPlayer extends StatefulWidget {
+  const SingleVideoPlayer({super.key});
   @override
-  State<PropertyVideoPlayer> createState() => _PropertyVideoPlayerState();
+  State<SingleVideoPlayer> createState() => _SingleVideoPlayerState();
 }
 
-class _PropertyVideoPlayerState extends State<PropertyVideoPlayer> {
+class _SingleVideoPlayerState extends State<SingleVideoPlayer> {
   VideoPlayerController? _controller;
   Map<String, dynamic>? data;
   late final String video;

@@ -2,13 +2,15 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../../constant_and_api/aaspas_constant.dart';
+import '../../functions/location/LocationSetterAaspas.dart';
 import '../../widgets/services/service_card.dart';
 
 import '../../model/services_card_model.dart';
 
 class ServicesListNonSliver extends StatefulWidget {
-  const ServicesListNonSliver({super.key});
-
+  const ServicesListNonSliver({super.key, this.id});
+  final String? id;
   @override
   State<ServicesListNonSliver> createState() => _ServicesListNonSliverState();
 }
@@ -43,8 +45,12 @@ class _ServicesListNonSliverState extends State<ServicesListNonSliver> {
       isLoading = true;
     });
 
+    final String paramString =
+        '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize&categoryId=${widget.id}';
+
     final url =
-        'https://api-246icbhmiq-uc.a.run.app/user/getServicesByCategory?page=$currentPage&pageSize=$pageSize&categoryId=6751965996e15298c8c8ac1a&lat=22.733255&lng=75.913898';
+        '${AaspasApi.baseUrl}${AaspasApi.getServicesByCategory}$paramString';
+
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
@@ -78,6 +84,13 @@ class _ServicesListNonSliverState extends State<ServicesListNonSliver> {
         if (index < serviceList.length) {
           // final item = serviceList[index];
           return ServiceCard(
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                "/service_details",
+                arguments: {"sid": "${serviceList[index].sId}"},
+              );
+            },
             karigarName: "${serviceList[index].karigarName}",
             charges: "${serviceList[index].charges}",
             image: "${serviceList[index].image}",

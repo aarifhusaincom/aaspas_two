@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../widgets/appbar_only_back.dart';
+import '../../widgets/app_and_search_bar/appbar_only_back.dart';
 
-import '../constant_and_api/aaspas_constant.dart';
-import '../widgets/chips/category_chip.dart';
-import '../widgets/chips/item_chip.dart';
-import '../widgets/property/property_list_non_sliver.dart';
-import '../widgets/shops/services_list_non_sliver.dart';
-import '../widgets/shops/shop_list_non_sliver.dart';
+import '../../constant_and_api/aaspas_constant.dart';
+import '../../functions/location/LocationSetterAaspas.dart';
+import '../../widgets/chips/category_chip.dart';
+import '../../widgets/chips/item_chip.dart';
+import '../../widgets/property/property_list_non_sliver.dart';
+import '../../widgets/shops/services_list_non_sliver.dart';
+import '../../widgets/shops/shop_list_non_sliver.dart';
 
 class CatItemWise extends StatefulWidget {
   const CatItemWise({super.key});
@@ -17,6 +18,13 @@ class CatItemWise extends StatefulWidget {
 }
 
 class _CatItemWiseState extends State<CatItemWise> {
+  @override
+  void initState() {
+    LocationSetterAaspas(); // TODO: implement initState
+    super.initState();
+  }
+
+  ///////// received data from route arguments Starts/////////
   dynamic data;
   String? id;
   String? name;
@@ -33,16 +41,19 @@ class _CatItemWiseState extends State<CatItemWise> {
         name = data?['name'];
         imageUrl = data?['imageUrl'];
         categoryType = data?['categoryType'];
-
-        print('//////////////////////////// categoryType');
-        print(categoryType);
-        print(id);
         cardType = data?['cardType']; // send me category or item
+        print('/////////////////////// Data received at cat_item_wise');
+        print(id);
+        print(name);
+        print(imageUrl);
+        print(categoryType);
+        print(cardType);
       }
     }
     // TODO: implement didChangeDependencies
     super.didChangeDependencies();
   }
+  ///////// received data from route arguments Ends/////////
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +135,7 @@ class _CatItemWiseState extends State<CatItemWise> {
                   (categoryType == 'properties')
                       ? PropertyListNonSliver(id: '$id')
                       : (categoryType == 'services')
-                      ? ServicesListNonSliver()
+                      ? ServicesListNonSliver(id: id)
                       : ShopListNonSliver(shopFor: cardType, id: id),
             ),
 

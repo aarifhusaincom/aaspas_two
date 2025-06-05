@@ -11,11 +11,12 @@ import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../constant_and_api/aaspas_constant.dart';
-import '../../widgets/appbar_only_back.dart';
-import '../../widgets/buttons/custom_button.dart';
+import '../../../constant_and_api/aaspas_constant.dart';
+import '../../widgets/app_and_search_bar/appbar_only_back.dart';
+import '../../../widgets/buttons/custom_button.dart';
 
-import '../widgets/label_card.dart';
+import '../../functions/location/LocationSetterAaspas.dart';
+import '../../widgets/cat_type_and_cards/label_card.dart';
 
 class PropertyDetailsPage extends StatefulWidget {
   const PropertyDetailsPage({
@@ -77,6 +78,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   int maintenanceAmount = 0;
   List facilityDetails = [];
   List images = [];
+  List<String> newImageLinks = [];
   //////////////////////////////
   Future<void> getPropertyByID() async {
     final String paramString = '?id=$currentPropertyId';
@@ -108,8 +110,27 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
       maintenanceAmount = jsonData['items'][0]['maintenance_amount'] ?? 0;
       facilityDetails = jsonData['items'][0]['facilityDetails'];
       images = jsonData['items'][0]['images'];
-      dataLoaded = true;
-      setState(() {});
+      if (images.isEmpty) {
+        newImageLinks = [];
+      } else {
+        newImageLinks = List.generate(
+          images.length,
+          // TODO: null exception chacha chai response does not have url key
+          (index) =>
+              jsonData['items'][0]['images'][index]['url'] ??
+              AaspasImages.shopAltImage,
+        );
+        // print("///////////////////////////////////////////print 2");
+        // print(video);
+        setState(() {
+          LocationSetterAaspas.getLocation();
+          // print(dataLoaded);
+          dataLoaded = true;
+          // print(dataLoaded);
+        });
+      }
+      // dataLoaded = true;
+      // setState(() {});
     }
   }
 
@@ -203,7 +224,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        ImageSlider(),
+                        ImageSlider(imageLinks: newImageLinks),
                         if (video != '')
                           Positioned(
                             bottom: 0,
@@ -212,7 +233,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                               onTap: () {
                                 Navigator.pushNamed(
                                   context,
-                                  '/property_video_player',
+                                  '/single_video_players',
                                   arguments: {'video': video},
                                 );
                               },

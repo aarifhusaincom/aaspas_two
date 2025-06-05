@@ -15,9 +15,24 @@ class _ImageSliderState extends State<ImageSlider> {
   List<Map<String, dynamic>> imageList = [];
   bool networkImage = false;
   List dummyList = [
-    {'id': 1, 'image_path': 'assets/slider/1.png'},
-    {'id': 2, 'image_path': 'assets/slider/2.png'},
-    {'id': 3, 'image_path': 'assets/slider/3.png'},
+    // {'id': 1, 'image_path': 'assets/slider/1.png'},
+    // {'id': 2, 'image_path': 'assets/slider/2.png'},
+    // {'id': 3, 'image_path': 'assets/slider/3.png'},
+    {
+      'id': 1,
+      'image_path':
+          'https://raw.githubusercontent.com/aarifhusainwork/aaspas-storage-assets/refs/heads/main/AppWizard/AltImages/propertyDummyImages/1.png',
+    },
+    {
+      'id': 2,
+      'image_path':
+          'https://raw.githubusercontent.com/aarifhusainwork/aaspas-storage-assets/refs/heads/main/AppWizard/AltImages/propertyDummyImages/2.png',
+    },
+    {
+      'id': 3,
+      'image_path':
+          'https://raw.githubusercontent.com/aarifhusainwork/aaspas-storage-assets/refs/heads/main/AppWizard/AltImages/propertyDummyImages/3.png',
+    },
   ];
 
   @override
@@ -53,7 +68,7 @@ class _ImageSliderState extends State<ImageSlider> {
                       .map(
                         (item) => Container(
                           clipBehavior: Clip.hardEdge,
-                          // width: 80,
+                          width: double.infinity,
                           // height: 80,
                           decoration: BoxDecoration(
                             image: DecorationImage(
@@ -74,21 +89,30 @@ class _ImageSliderState extends State<ImageSlider> {
                                           AaspasImages.shopPlaceholder,
                                         ),
                                   )
-                                  : Image.asset(
-                                    item['image_path'],
+                                  : CachedNetworkImage(
+                                    imageUrl: item['image_path'],
                                     fit: BoxFit.cover,
-                                    errorBuilder:
+                                    errorWidget:
                                         (context, url, error) => Image.asset(
                                           fit: BoxFit.cover,
                                           AaspasImages.shopPlaceholder,
                                         ),
                                   ),
+                          // : Image.asset(
+                          //   item['image_path'],
+                          //   fit: BoxFit.cover,
+                          //   errorBuilder:
+                          //       (context, url, error) => Image.asset(
+                          //         fit: BoxFit.cover,
+                          //         AaspasImages.shopPlaceholder,
+                          //       ),
+                          // ),
                         ),
                       )
                       .toList(),
               options: CarouselOptions(
                 scrollPhysics: BouncingScrollPhysics(),
-                autoPlay: true,
+                autoPlay: (widget.imageLinks.length == 1) ? false : true,
                 aspectRatio: 1,
 
                 viewportFraction: 1,
