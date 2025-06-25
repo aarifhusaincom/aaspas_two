@@ -1,8 +1,11 @@
 import 'dart:core';
+import 'package:aaspas/constant_and_api/aaspas_constant.dart';
 import 'package:aaspas/widgets/shops/shop_list_sliver_nearby.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 
+import '../functions/app_version/app_version_updater.dart';
 import '../widgets/app_and_search_bar/home_app_bar.dart';
 
 import '../widgets/cat_type_and_cards/category_grid_view.dart';
@@ -22,21 +25,37 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   bool isLocationFetch = false;
+
   // freshLocation() {
   // }
 
+  /// Platform info
+
+  String version = '';
+  String buildNumber = '';
   @override
   void initState() {
+    super.initState();
+    // AppVersionUpdater.sendToUpdaterScreen(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // if (mounted) {
+      // context is fully available here
+      AppVersionUpdater.sendToUpdaterScreen(context);
+      // }
+    });
     //////////////////
     LocationSetterAaspas.getLocation().then((e) {
-      setState(() {
-        isLocationFetch = true;
-      });
+      if (mounted) {
+        // Check if the widget is still in the tree
+        setState(() {
+          isLocationFetch = true;
+        });
+      }
     });
     /////////////////////
     // freshLocation();
     // TODO: implement initState
-    super.initState();
+    // super.initState();
   }
 
   @override
@@ -50,11 +69,17 @@ class _HomepageState extends State<Homepage> {
         backgroundColor: Colors.white,
         appBar: HomeAppBar(),
         body: Center(
-          child: Column(
-            spacing: 10,
-            mainAxisSize: MainAxisSize.min,
-            children: [CircularProgressIndicator(), Text("Loading")],
+          child: Lottie.asset(
+            AaspasLottie.mapicon3d,
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.fitWidth,
           ),
+          // Column(
+          //   spacing: 10,
+          //   mainAxisSize: MainAxisSize.min,
+          //   children: [CircularProgressIndicator(), Text("Loading")],
+          // ),
         ),
       );
     }

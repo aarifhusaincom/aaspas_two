@@ -35,6 +35,14 @@ class ShopCard extends StatelessWidget {
   // Logic in State Ends//
   @override
   Widget build(BuildContext context) {
+    print("/////// - image value in shop card widget");
+    print(image);
+    // print(
+    //   "/////// - image == null || image == "
+    //   "",
+    // );
+    print(image == null || image == "");
+    print(image == null);
     return InkWell(
       onTap: onTap,
       child: Card(
@@ -75,8 +83,13 @@ class ShopCard extends StatelessWidget {
                 //     ); // fallback image
                 //   },
                 // ),
+                // uncomment this if you want to use cached network image
                 child: CachedNetworkImage(
-                  imageUrl: image,
+                  imageUrl:
+                      (image == null || image == "")
+                          ? AaspasWizard.shopAltImage
+                          : image,
+                  // image ?? AaspasWizard.shopAltImage,
                   fit: BoxFit.cover,
                   // progressIndicatorBuilder:
                   //     (context, url, downloadProgress) =>

@@ -29,13 +29,13 @@ class _ServiceDetailsState extends State<ServiceDetails> {
   bool dataLoaded = false;
   //------for same page refresh----- starts //
   final ScrollController _scrollController = ScrollController();
-  late String currentShopId;
+  late String currentServiceId;
 
   /// load new property method
   void loadNewService(String newServiceId) {
-    if (newServiceId == currentShopId) return;
+    if (newServiceId == currentServiceId) return;
     dataLoaded = false;
-    currentShopId = newServiceId;
+    currentServiceId = newServiceId;
     _scrollController.animateTo(
       0,
       duration: const Duration(milliseconds: 400),
@@ -59,7 +59,7 @@ class _ServiceDetailsState extends State<ServiceDetails> {
   ////////////////////////////////////////////////
   var servicesDetailsJson;
   ////////
-  String karigarName = "";
+  String providerName = "";
   String catName = "";
   String area = "";
   String minCharge = "";
@@ -70,10 +70,10 @@ class _ServiceDetailsState extends State<ServiceDetails> {
   /////////////////////////////////////////////////////////////
   Future<void> getServicesDetailsById() async {
     final String paramString =
-        '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&id=$currentShopId';
+        '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&id=$currentServiceId';
 
     final url =
-        '${AaspasApi.baseUrl}${AaspasApi.getServicesDetailsById}$paramString';
+        '${AaspasWizard.baseUrl}${AaspasWizard.getServicesDetailsById}$paramString';
 
     final response = await http.get(Uri.parse(url));
 
@@ -82,7 +82,7 @@ class _ServiceDetailsState extends State<ServiceDetails> {
       setState(() {
         dataLoaded = true;
         servicesDetailsJson = jsonData['items'][0];
-        karigarName = servicesDetailsJson['karigar_name'].toString();
+        providerName = servicesDetailsJson['provider_name'].toString();
         imgUrl = servicesDetailsJson['image'].toString();
         catName = servicesDetailsJson['categoryName'].toString();
         area = servicesDetailsJson['area'].toString();
@@ -91,7 +91,7 @@ class _ServiceDetailsState extends State<ServiceDetails> {
         description = servicesDetailsJson['description'].toString();
         phone = servicesDetailsJson['phoneNo'].toString();
         print("////////////////////////// karigar Details");
-        print(karigarName);
+        print(providerName);
         print(imgUrl);
         print(catName);
         print(area);
@@ -109,7 +109,7 @@ class _ServiceDetailsState extends State<ServiceDetails> {
   void initState() {
     super.initState();
     LocationSetterAaspas();
-    _fetchDetails = getServicesDetailsById();
+    // _fetchDetails = getServicesDetailsById();
   }
 
   ///////// received data from route arguments Starts/////////
@@ -125,7 +125,7 @@ class _ServiceDetailsState extends State<ServiceDetails> {
       if (args != null && args is Map<String, dynamic>) {
         data = args;
         sid = data?['sid'];
-        currentShopId = sid!;
+        currentServiceId = sid!;
         // print('/////////////////////// Data received at service_details');
         // print(sid);
         _hasFetched = true;
@@ -145,10 +145,31 @@ class _ServiceDetailsState extends State<ServiceDetails> {
     // final currentSize = MediaQuery.of(context).size;
 
     if (servicesDetailsJson == null) {
-      return Scaffold(body: const Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        body: Center(
+          child: Lottie.asset(
+            AaspasLottie.personInSuits,
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.fitWidth,
+          ),
+          // CircularProgressIndicator()
+        ),
+      );
     }
     if (!dataLoaded) {
-      return Scaffold(body: const Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        body: Center(
+          child: Lottie.asset(
+            AaspasLottie.personInSuits,
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.fitWidth,
+          ),
+
+          // CircularProgressIndicator()
+        ),
+      );
     }
     return Scaffold(
       backgroundColor: AaspasColors.white,
@@ -255,7 +276,7 @@ class _ServiceDetailsState extends State<ServiceDetails> {
                       // Karigar
                       SizedBox(
                         child: Text(
-                          karigarName,
+                          providerName,
                           maxLines: 2,
                           textAlign: TextAlign.center,
                           softWrap: true,
@@ -288,7 +309,7 @@ class _ServiceDetailsState extends State<ServiceDetails> {
                               fontSize: 15,
                               horizontalPadding: 10,
                               color: AaspasColors.black,
-                              bgColor: AaspasColors.soft2,
+                              // bgColor: AaspasColors.soft2,
                               spacing: 0,
                               showIcon: false,
                               iconSize: 0,
@@ -303,7 +324,7 @@ class _ServiceDetailsState extends State<ServiceDetails> {
                               fontSize: 15,
                               horizontalPadding: 10,
                               color: AaspasColors.black,
-                              bgColor: AaspasColors.soft2,
+                              // bgColor: AaspasColors.soft2,
                               spacing: 0,
                               showIcon: false,
                               iconSize: 0,
@@ -540,7 +561,7 @@ class _ServiceDetailsState extends State<ServiceDetails> {
           ),
           ServicesListSliver(
             categoryId: servicesDetailsJson['categoryId'].toString(),
-            serviceId: sid,
+            serviceId: currentServiceId,
             onServiceTap: loadNewService,
           ),
         ],

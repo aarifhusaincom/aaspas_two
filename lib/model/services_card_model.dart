@@ -29,7 +29,7 @@ class ServicesCardModel {
 
 class Items {
   String? sId;
-  String? karigarName;
+  String? providerName;
   String? image;
   String? description;
   String? area;
@@ -46,7 +46,7 @@ class Items {
 
   Items({
     this.sId,
-    this.karigarName,
+    this.providerName,
     this.image,
     this.description,
     this.area,
@@ -64,7 +64,7 @@ class Items {
 
   Items.fromJson(Map<String, dynamic> json) {
     sId = json['_id'];
-    karigarName = json['karigar_name'];
+    providerName = json['provider_name'];
     image = json['image'];
     description = json['description'];
     area = json['area'];
@@ -86,7 +86,7 @@ class Items {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['_id'] = this.sId;
-    data['karigar_name'] = this.karigarName;
+    data['karigar_name'] = this.providerName;
     data['image'] = this.image;
     data['description'] = this.description;
     data['area'] = this.area;

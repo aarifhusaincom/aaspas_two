@@ -5,14 +5,14 @@ import 'package:carousel_slider/carousel_slider.dart';
 
 class ImageSlider extends StatefulWidget {
   const ImageSlider({super.key, this.imageLinks = const []});
-  final List<String?> imageLinks;
+  final List<dynamic?> imageLinks;
 
   @override
   State<ImageSlider> createState() => _ImageSliderState();
 }
 
 class _ImageSliderState extends State<ImageSlider> {
-  List<Map<String, dynamic>> imageList = [];
+  List imageList = [];
   bool networkImage = false;
   List dummyList = [
     // {'id': 1, 'image_path': 'assets/slider/1.png'},
@@ -35,13 +35,25 @@ class _ImageSliderState extends State<ImageSlider> {
     },
   ];
 
+  bool containsMap(List list) {
+    return list.any((element) => element is Map);
+  }
+
   @override
   initState() {
+    print("/////////////////widget.imageLinks");
+    print(widget.imageLinks);
+    print(containsMap(widget.imageLinks));
     if (widget.imageLinks.isEmpty) {
       imageList = [...dummyList];
-      // print("/////////////////////////////////// imageList");
+
+      print("/////////////////////////////////// First is running");
       // print(imageList);
+    } else if (containsMap(widget.imageLinks)) {
+      imageList = [...dummyList];
+      print("/////////////////////////////////// 2 is running");
     } else {
+      print("/////////////////////////////////// 3 is running");
       networkImage = true;
       imageList = List.generate(
         widget.imageLinks.length,
@@ -57,6 +69,8 @@ class _ImageSliderState extends State<ImageSlider> {
 
   @override
   Widget build(BuildContext context) {
+    print("/////// Image Slider Build");
+    print(imageList);
     return SizedBox(
       child: Stack(
         children: [

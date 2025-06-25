@@ -22,7 +22,7 @@ class AaspasColors {
 }
 
 class AaspasStrings {
-  static String appName = "AasPas";
+  static String wizardUrl = "https://aaspas-json.web.app/androidv4.json";
   static String search = "Search";
   static String shopCategories = "Shop Categories";
   static String workerCategories = "Worker Categories";
@@ -31,15 +31,9 @@ class AaspasStrings {
   static String details = "Details";
   static String help = "Help";
   static String khajranaIndore = "Khajrana, Indore";
-  static String propertyChatSuffix =
-      "यह जानकारी Aaspas ऐप से मिली है। मुझे इसके बारे में जानना है";
   static String trendingCategories = "Trending Categories";
-  static String ShopListSliver = "Near By Shops";
-  static String searchPlaceholder =
-      "Search for Mobile shop, Bakery, Electrician";
+  static String shopListSliver = "Near By Shops";
   static String empty = "";
-  static String whatsappHelp =
-      "https://api.whatsapp.com/send?phone=918884446009&text=_*Aaspas+help*_";
 }
 
 class AaspasImages {
@@ -51,8 +45,6 @@ class AaspasImages {
 
   // Cards Images on HomePage
   static String shops = "assets/images/category_type_cards/Shops.png";
-  static String shopAltImage =
-      "https://raw.githubusercontent.com/aarifhusainwork/aaspas-storage-assets/refs/heads/main/AppWizard/AltImages/ShopAltImage.png";
   static String serviceProvider =
       "assets/images/category_type_cards/Service Provider.png";
   static String property = "assets/images/category_type_cards/Property.png";
@@ -60,6 +52,7 @@ class AaspasImages {
 
 class AaspasIcons {
   static String verified = "assets/icons/verified.svg";
+  static String viewWhite = "assets/icons/view_white.svg";
   static String direction = "assets/icons/direction.svg";
   static String mapIcon = "assets/icons/map_icon.svg";
   static String whatsapp1 = "assets/icons/whatsapp1.svg";
@@ -73,32 +66,22 @@ class AaspasIcons {
 
 class AaspasLottie {
   static String videoWave = "assets/lottie/video_wave_animation.json";
+  static String offer = "assets/lottie/offer.json";
+  static String personInSuits = "assets/lottie/loaders/personInSuits.json";
+  static String mapicon3d = "assets/lottie/loaders/mapicon3d.json";
+  static String shopAnimation = "assets/lottie/loaders/shopAnimation.json";
+  static String reelsAnimation = "assets/lottie/loaders/reelsAnimation.json";
+  static String infiniteWithBall =
+      "assets/lottie/loaders/infiniteWithBall.json";
+  static String sidemapsidelist =
+      "assets/lottie/loaders/sidemapsidelist.json"; // side map side list in primary color
 }
 
 class AaspasNumber {
   static int maxImagesInCache = 2000; //2000 in production
   static int maxVideoInCache = 5; //10 in production
   static int maxMBInCache = 300; //300 MB in production
-}
-
-class AaspasApi {
-  static String baseUrl = "https://api-246icbhmiq-uc.a.run.app/";
-  static String getAllShops = "user/getAllShopss";
-  static String getShopsByCategory = "user/getShopsByCategory";
-  static String getShopsByItem = "user/getShopsByItem";
-  static String getRelatedShops = "user/getRelatedShops";
-  static String getAllReels = 'user/getAllReels';
-  static String getAllCategories = 'user/getUserCategoriess';
-  static String getShopsDetailsById = 'user/getShopsDetailsById';
-  static String getShopsCatItems = 'user/getShopsCatItems';
-
-  ////// Service
-  static String getServicesByCategory = 'user/getServicesByCategory';
-  static String getServicesDetailsById = 'user/getServicesDetailsById';
-
-  ////// Property
-  static String getPropertiesByCategoryId = 'prop/getPropertiesByCategoryId';
-  static String getPropertyByID = 'prop/getPropertyByID';
+  ////
 }
 
 class AaspasLocator {
@@ -114,4 +97,63 @@ class AaspasPageData {
 
 class AaspasReels {
   static List reelsList = [];
+}
+
+class AaspasWizard {
+  //// generalInfo
+  static String appName = "AasPas";
+  static int appNameFontSize = 28;
+  static String platform = "android";
+  static bool checkVersionForUpdate = false;
+  static String minAppVersion = "4.0.2";
+  static bool itemTypeVisible = true;
+  static bool cardVisibleOnReel = true;
+  static bool orientationLock = true;
+
+  //// appStrings
+  static String whatsAppHelp =
+      "https://api.whatsapp.com/send?phone=918884446009&text=_*Aaspas+help*_";
+  static String newVersionLink =
+      "https://play.google.com/store/apps/details?id=com.aaspas.app";
+  static String userWhatsAppBaseUrl = "https://api.whatsapp.com/send?phone=";
+  static String userDynamicMsg = "&text=_*Aaspas+hello*_";
+  static String searchPlaceholder =
+      "Search for Mobile shop, Bakery, Electrician";
+
+  static String propertyChatSuffix =
+      "यह जानकारी Aaspas ऐप से मिली है। मुझे इसके बारे में जानना है";
+
+  //// api user
+  static String androidUrl = "";
+  static String webUrl = "";
+  static String baseUrl = "";
+
+  //// api shops
+  static String getAllShops = "user/getAllShops";
+  static String getShopsByCategory = "user/getShopsByCategory";
+  static String getShopsByItem = "user/getShopsByItem";
+  static String getRelatedShops = "user/getRelatedShops";
+  static String getShopsDetailsById = "user/getShopsDetailsById";
+  static String getShopsCatItems = "user/getShopsCatItems";
+  static String getAllCategories = "user/getCategory";
+
+  //// Service
+  static String getServicesByCategory = "user/getServicesByCategory";
+  static String getServicesDetailsById = "user/getServicesDetailsById";
+
+  //// Property
+  static String getPropertiesByCategoryId = "prop/getPropertiesByCategoryId";
+  static String getPropertyByNo = "prop/getPropertyByNo";
+  static String getPropertyByID = "prop/getPropertyByID";
+
+  //// api reels
+  static String getAllReels = "user/getAllReels";
+
+  //// user area
+  static String getUserArea = "user/getUserArea";
+
+  //// others
+  static String shopAltImage =
+      "https://raw.githubusercontent.com/aarifhusainwork/aaspas-storage-assets/refs/heads/main/AppWizard/AltImages/ShopAltImage.png";
+  static String privacyPolicy = "https://aaspas-privacypolicy.aaspas.app/";
 }

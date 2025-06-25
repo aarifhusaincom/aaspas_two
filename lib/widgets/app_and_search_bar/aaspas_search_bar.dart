@@ -52,7 +52,7 @@ class AaspasSearchBar extends StatelessWidget {
                     ),
                     filled: true,
                     hintMaxLines: 1,
-                    hintText: AaspasStrings.searchPlaceholder,
+                    hintText: AaspasWizard.searchPlaceholder,
                     hintStyle: TextStyle(
                       overflow: TextOverflow.ellipsis,
                       fontFamily: "Roboto",

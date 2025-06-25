@@ -21,9 +21,9 @@ import '../../widgets/cat_type_and_cards/label_card.dart';
 class PropertyDetailsPage extends StatefulWidget {
   const PropertyDetailsPage({
     super.key,
-    this.propertyId = '6832ba660061f42441adc081',
+    // this.propertyId = '6832ba660061f42441adc081',
   });
-  final String propertyId;
+  // final String propertyId;
   @override
   State<PropertyDetailsPage> createState() => _PropertyDetailsPageState();
 }
@@ -32,6 +32,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   //------for same page refresh----- starts //
   final ScrollController _scrollController = ScrollController();
   late String currentPropertyId;
+  late String propertyCategoryId;
 
   /// load new property method
   void loadNewProperty(String newPropertyId) {
@@ -73,16 +74,22 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   String city = "";
   String video = "";
   int securityDeposit = 0;
-  int numberOfMonthsSecurity = 0;
+  String? numberOfMonthsSecurity = "0";
   int brokerageAmount = 0;
   int maintenanceAmount = 0;
   List facilityDetails = [];
   List images = [];
-  List<String> newImageLinks = [];
+  List<dynamic> newImageLinks = [];
+  /////////////////////////////
+  bool containsMap(List list) {
+    return list.any((element) => element is Map);
+  }
   //////////////////////////////
+
   Future<void> getPropertyByID() async {
     final String paramString = '?id=$currentPropertyId';
-    final url = '${AaspasApi.baseUrl}${AaspasApi.getPropertyByID}$paramString';
+    final url =
+        '${AaspasWizard.baseUrl}${AaspasWizard.getPropertyByID}$paramString';
 
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
@@ -105,23 +112,30 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
           "${jsonData['items'][0]['video'] ?? 'https://github.com/aarifhusainwork/aaspas-storage-assets/raw/refs/heads/main/IndoreInstagram/Khajrana_reels/reels/4.mp4'}";
       securityDeposit = jsonData['items'][0]['pincode'];
       numberOfMonthsSecurity =
-          jsonData['items'][0]['no_of_months_security'] ?? 0;
-      brokerageAmount = jsonData['items'][0]['brokerageAmount'];
+          jsonData['items'][0]['no_of_months_security'] ?? "0";
+      brokerageAmount = jsonData['items'][0]['brokerageAmount'] ?? 0;
       maintenanceAmount = jsonData['items'][0]['maintenance_amount'] ?? 0;
       facilityDetails = jsonData['items'][0]['facilityDetails'];
-      images = jsonData['items'][0]['images'];
+      images = jsonData['items'][0]['images'] ?? [];
       if (images.isEmpty) {
         newImageLinks = [];
+        setState(() {
+          LocationSetterAaspas.getLocation();
+          // print(dataLoaded);
+          dataLoaded = true;
+          // print(dataLoaded);
+        });
+      } else if (containsMap(images)) {
+        newImageLinks = [];
+        setState(() {
+          LocationSetterAaspas.getLocation();
+          // print(dataLoaded);
+          dataLoaded = true;
+          // print(dataLoaded);
+        });
       } else {
-        newImageLinks = List.generate(
-          images.length,
-          // TODO: null exception chacha chai response does not have url key
-          (index) =>
-              jsonData['items'][0]['images'][index]['url'] ??
-              AaspasImages.shopAltImage,
-        );
-        // print("///////////////////////////////////////////print 2");
-        // print(video);
+        newImageLinks = [];
+        newImageLinks = images;
         setState(() {
           LocationSetterAaspas.getLocation();
           // print(dataLoaded);
@@ -154,16 +168,29 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   //   }
 
   String getShareText() {
-    return '💸 *Price - ₹ ${_formatPrice(actualPrice)}*\n'
-        '📐 *$totalArea sq Feet*\n'
-        '( ₹ ${(actualPrice / totalArea).toStringAsFixed(0)} per sq Feet )\n\n'
-        '📍 $area - $city\n'
-        '🏠 $description \n\n'
-        '👤* *$ownerName*\n'
-        '☎️* *$phoneNo*\n'
-        '\n\n'
-        '*Property Code- 123*\n\n';
+    return '''💸 *Price - ₹ ${_formatPrice(actualPrice)}*
+📐 *$totalArea sq Feet*
+( ₹ ${(actualPrice / totalArea).toStringAsFixed(0)} per sq Feet )
+
+📍 $area - $city
+🏠 $description
+*👤 *$ownerName*
+*📞 *$phoneNo*
+        
+*Property Code - 123*''';
   }
+
+  // String getShareText() {
+  //   return '💸 *Price - ₹ ${_formatPrice(actualPrice)}*\n'
+  //       '📐 *$totalArea sq Feet*\n'
+  //       '( ₹ ${(actualPrice / totalArea).toStringAsFixed(0)} per sq Feet )\n\n'
+  //       '📍 $area - $city\n'
+  //       '🏠 $description \n\n'
+  //       '*👤 *$ownerName*\n'
+  //       '*📞 *$phoneNo*\n'
+  //       '\n\n'
+  //       '*Property Code- 123*\n\n';
+  // }
   /////////////-----getShareText end ////////////
 
   String _formatPrice(int price) {
@@ -181,15 +208,36 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   @override
   initState() {
     super.initState();
-    currentPropertyId = widget.propertyId;
-    getPropertyByID();
+    // currentPropertyId = widget.propertyId;
+    // getPropertyByID();
+  }
+
+  dynamic data;
+  String? sid;
+  @override
+  void didChangeDependencies() {
+    LocationSetterAaspas.getLocation();
+    print("//////// didChangeDependencies called in Property details");
+    if (data == null) {
+      final args = ModalRoute.of(context)!.settings.arguments;
+      if (args != null && args is Map<String, dynamic>) {
+        data = args;
+        sid = data?['sid'];
+        currentPropertyId = sid!;
+        getPropertyByID();
+      }
+    }
+    // TODO: implement didChangeDependencies
+
+    super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
     final currentSize = MediaQuery.of(context).size;
-
+    print('//////////////////// Property Details Build Method');
+    print(newImageLinks);
     if (!dataLoaded) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -335,7 +383,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                     fontSize: 14,
                                     horizontalPadding: 10,
                                     color: AaspasColors.primary,
-                                    bgColor: AaspasColors.soft2,
+                                    // bgColor: AaspasColors.soft2,
                                     // spacing: 10,
                                     showIcon: false,
                                     // iconPath: AaspasIcons.shareShop,
@@ -377,7 +425,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                 fontSize: 15,
                                 horizontalPadding: 10,
                                 color: AaspasColors.black,
-                                bgColor: AaspasColors.soft2,
+                                // bgColor: AaspasColors.soft2,
                                 spacing: 0,
                                 showIcon: false,
                                 iconSize: 0,
@@ -392,7 +440,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                 fontSize: 15,
                                 horizontalPadding: 10,
                                 color: AaspasColors.black,
-                                bgColor: AaspasColors.soft2,
+                                // bgColor: AaspasColors.soft2,
                                 spacing: 0,
                                 showIcon: false,
                                 iconSize: 0,
@@ -430,18 +478,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                     ),
                                     LabelCard(
                                       onTap: () {
-                                        Share.share(
-                                          '*Price - ₹ ${_formatPrice(actualPrice)}*\n'
-                                          '*$totalArea sq Feet*\n'
-                                          '( ₹ ${(actualPrice / totalArea).toStringAsFixed(0)} per sq Feet )\n\n'
-                                          '$area - $city\n'
-                                          '$description \n\n'
-                                          '* *$ownerName*\n'
-                                          '* *$phoneNo*\n'
-                                          '\n\n'
-                                          '*Property Code- 123*\n\n'
-                                          '',
-                                        );
+                                        Share.share(getShareText());
                                       },
                                       constraints: BoxConstraints(
                                         minWidth: 100,
@@ -524,7 +561,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                 onPressed: () async {
                                   // print("WhatsApp Clicked");
                                   var url =
-                                      'https://api.whatsapp.com/send?phone=917742121202&text=${Uri.encodeComponent(description)}%0A%0A_*${Uri.encodeComponent(AaspasStrings.propertyChatSuffix)}*_';
+                                      'https://api.whatsapp.com/send?phone=917742121202&text=${Uri.encodeComponent(description)}%0A%0A_*${Uri.encodeComponent(AaspasWizard.propertyChatSuffix)}*_';
                                   // launch(url);
                                   if (await canLaunch(url)) {
                                     await launch(url);
@@ -581,7 +618,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                 // height: 40,
                 width: double.infinity,
                 child: Text(
-                  "Related Commercial Properties near by",
+                  "Related Properties Nearby",
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.roboto(
@@ -597,6 +634,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
           ),
           PropertyListSliver(
             propertyId: currentPropertyId,
+            propertyCategoryId: categoryId,
             onTapPropertyCard: loadNewProperty,
           ),
         ],

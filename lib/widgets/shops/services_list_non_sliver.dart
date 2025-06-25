@@ -2,8 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 import '../../constant_and_api/aaspas_constant.dart';
-import '../../functions/location/LocationSetterAaspas.dart';
+// import '../../functions/location/LocationSetterAaspas.dart';
 import '../../widgets/services/service_card.dart';
 
 import '../../model/services_card_model.dart';
@@ -49,7 +50,7 @@ class _ServicesListNonSliverState extends State<ServicesListNonSliver> {
         '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize&categoryId=${widget.id}';
 
     final url =
-        '${AaspasApi.baseUrl}${AaspasApi.getServicesByCategory}$paramString';
+        '${AaspasWizard.baseUrl}${AaspasWizard.getServicesByCategory}$paramString';
 
     final response = await http.get(Uri.parse(url));
 
@@ -57,7 +58,8 @@ class _ServicesListNonSliverState extends State<ServicesListNonSliver> {
       final jsonData = json.decode(response.body);
       final model = ServicesCardModel.fromJson(jsonData);
       final newItems = model.items ?? [];
-
+      print("///////////////////// newItems");
+      print(newItems);
       setState(() {
         if (newItems.isEmpty && serviceList.isEmpty) {
           noDataFound = true;
@@ -73,6 +75,7 @@ class _ServicesListNonSliverState extends State<ServicesListNonSliver> {
 
   @override
   Widget build(BuildContext context) {
+    print("/////////////////// service list non sliver running");
     if (noDataFound) {
       return Center(child: Text("No Data Found"));
     }
@@ -91,7 +94,7 @@ class _ServicesListNonSliverState extends State<ServicesListNonSliver> {
                 arguments: {"sid": "${serviceList[index].sId}"},
               );
             },
-            karigarName: "${serviceList[index].karigarName}",
+            providerName: "${serviceList[index].providerName}",
             charges: "${serviceList[index].charges}",
             image: "${serviceList[index].image}",
             edgeInsets: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
@@ -103,7 +106,13 @@ class _ServicesListNonSliverState extends State<ServicesListNonSliver> {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(),
+              child: Lottie.asset(
+                AaspasLottie.sidemapsidelist,
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.fitWidth,
+              ),
+              // CircularProgressIndicator(),
             ),
           );
         }

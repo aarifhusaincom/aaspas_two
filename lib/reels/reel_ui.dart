@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:aaspas/widgets/cat_type_and_cards/ShopCardOnReel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:video_player/video_player.dart';
@@ -65,6 +66,7 @@ class _VideoPlayerItemState extends State<VideoPlayerItem> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
     return _controller != null && _controller!.value.isInitialized
         ? Stack(
           fit: StackFit.expand,
@@ -133,6 +135,13 @@ class _VideoPlayerItemState extends State<VideoPlayerItem> {
                   ),
                 ),
               ),
+            Positioned(
+              bottom: 10,
+              right: 16,
+              // left: 16,
+              width: (width - 32),
+              child: ShopCardOnReel(totalViews: 1500),
+            ),
           ],
         )
         : Center(

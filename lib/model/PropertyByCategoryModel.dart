@@ -34,10 +34,12 @@ class Items {
   String? visualPrice;
   int? totalArea;
   String? area;
-  List<Images>? images;
+  String? images;
   int? phoneNo;
   String? brokerageType;
   String? city;
+  int? propertyId;
+  String? videoUrl;
   double? distanceKm;
 
   Items({
@@ -51,6 +53,8 @@ class Items {
     this.phoneNo,
     this.brokerageType,
     this.city,
+    this.propertyId,
+    this.videoUrl,
     this.distanceKm,
   });
 
@@ -61,15 +65,12 @@ class Items {
     visualPrice = json['visual_price'];
     totalArea = json['totalArea'];
     area = json['area'];
-    if (json['images'] != null) {
-      images = <Images>[];
-      json['images'].forEach((v) {
-        images!.add(new Images.fromJson(v));
-      });
-    }
+    images = json['images'];
     phoneNo = json['phoneNo'];
     brokerageType = json['brokerageType'];
     city = json['city'];
+    propertyId = json['propertyId'];
+    videoUrl = json['videoUrl'];
     distanceKm = json['distanceKm'];
   }
 
@@ -81,32 +82,13 @@ class Items {
     data['visual_price'] = this.visualPrice;
     data['totalArea'] = this.totalArea;
     data['area'] = this.area;
-    if (this.images != null) {
-      data['images'] = this.images!.map((v) => v.toJson()).toList();
-    }
+    data['images'] = this.images;
     data['phoneNo'] = this.phoneNo;
     data['brokerageType'] = this.brokerageType;
     data['city'] = this.city;
+    data['propertyId'] = this.propertyId;
+    data['videoUrl'] = this.videoUrl;
     data['distanceKm'] = this.distanceKm;
-    return data;
-  }
-}
-
-class Images {
-  String? key;
-  String? url;
-
-  Images({this.key, this.url});
-
-  Images.fromJson(Map<String, dynamic> json) {
-    key = json['key'];
-    url = json['url'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['key'] = this.key;
-    data['url'] = this.url;
     return data;
   }
 }

@@ -33,6 +33,7 @@ class Items {
   String? thumbnailUrl;
   String? shopId;
   int? count;
+  int? views;
   ShopDetails? shopDetails;
   String? createdAt;
 
@@ -42,6 +43,7 @@ class Items {
     this.thumbnailUrl,
     this.shopId,
     this.count,
+    this.views,
     this.shopDetails,
     this.createdAt,
   });
@@ -52,6 +54,7 @@ class Items {
     thumbnailUrl = json['thumbnail_url'];
     shopId = json['shop_id'];
     count = json['count'];
+    views = json['views'];
     shopDetails =
         json['shopDetails'] != null
             ? ShopDetails.fromJson(json['shopDetails'])

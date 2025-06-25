@@ -62,7 +62,7 @@ class _PropertyListSliverState extends State<PropertyListSliver> {
     final String paramString =
         '?categoryId=$categoryId&lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=${AaspasPageData.page}&pageSize=${AaspasPageData.pageSize}';
     final url =
-        '${AaspasApi.baseUrl}${AaspasApi.getPropertiesByCategoryId}$paramString';
+        '${AaspasWizard.baseUrl}${AaspasWizard.getPropertiesByCategoryId}$paramString';
 
     final response = await http.get(Uri.parse(url));
 
@@ -138,12 +138,22 @@ class _PropertyListSliverState extends State<PropertyListSliver> {
                       totalArea: propertyList[index].totalArea,
                       phoneNo: propertyList[index].phoneNo.toString(),
                       brokerageType: "${propertyList[index].brokerageType}",
+                      // image:
+                      //     jsonData['items'][index]['images'].length == 0
+                      //         ? "assets/images/shopPlaceholder.png"
+                      //         : jsonData['items'].length == 0
+                      //         ? "assets/images/shopPlaceholder.png"
+                      //         : "${jsonData['items'][index]['images'][0]['url']}",
                       image:
-                          jsonData['items'][index]['images'].length == 0
-                              ? "assets/images/shopPlaceholder.png"
-                              : jsonData['items'].length == 0
-                              ? "assets/images/shopPlaceholder.png"
-                              : "${jsonData['items'][index]['images'][0]['url']}",
+                          propertyList[index].images == null
+                              ? AaspasWizard.shopAltImage
+                              : propertyList[index].images!.isEmpty
+                              ? AaspasWizard.shopAltImage
+                              // : !propertyList[index].images![0] is String
+                              : true
+                              ? AaspasWizard.shopAltImage
+                              : propertyList[index].images![0],
+                      // : AaspasWizard.shopAltImage,
                       area: "${propertyList[index].area}",
                       city: "${propertyList[index].city}",
                       edgeInsets: EdgeInsets.symmetric(

@@ -1,5 +1,7 @@
 import 'dart:core';
 
+import 'package:aaspas/functions/wizard.dart';
+import 'package:aaspas/screens/other_screens/app_update_screen.dart';
 import 'package:aaspas/screens/property_screens/property_details.dart';
 import 'package:aaspas/screens/property_screens/single_video_player.dart';
 import 'package:aaspas/screens/search_screens/search_page_property_wise.dart';
@@ -51,7 +53,7 @@ main() async {
     isOld = boxBool.get('key_isOld');
   }
   isOld = boxBool.get('key_isOld');
-
+  Wizard.setWizardIntoConstant();
   runApp(const MyApp());
 }
 
@@ -96,6 +98,7 @@ class MyApp extends StatelessWidget {
         '/service_details': (context) => ServiceDetails(),
         '/location_permission': (context) => LocationPermission(),
         '/location_denied': (context) => LocationDenied(),
+        '/app_update_screen': (context) => AppUpdateScreen(),
         '/image_slider': (context) => ImageSlider(),
         '/property_details': (context) => PropertyDetailsPage(),
         '/single_video_player': (context) => SingleVideoPlayer(),

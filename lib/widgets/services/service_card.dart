@@ -10,7 +10,7 @@ class ServiceCard extends StatelessWidget {
   const ServiceCard({
     super.key,
     required this.image,
-    required this.karigarName,
+    required this.providerName,
     required this.area,
     required this.categoryName,
     required this.charges,
@@ -19,7 +19,7 @@ class ServiceCard extends StatelessWidget {
   });
 
   final String image;
-  final String karigarName;
+  final String providerName;
   final String area;
   final String categoryName;
   final String charges;
@@ -90,7 +90,7 @@ class ServiceCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               maxLines: 1,
-                              karigarName,
+                              providerName,
                               style: TextStyle(
                                 overflow: TextOverflow.ellipsis,
                                 fontFamily: "Roboto",
@@ -142,7 +142,7 @@ class ServiceCard extends StatelessWidget {
                                       fontSize: 12,
                                       horizontalPadding: 10,
                                       color: AaspasColors.black,
-                                      bgColor: AaspasColors.soft2,
+                                      // bgColor: AaspasColors.soft2,
                                       spacing: 10,
                                       showIcon: false,
                                       iconSize: 15,
@@ -157,7 +157,7 @@ class ServiceCard extends StatelessWidget {
                                       fontSize: 12,
                                       horizontalPadding: 10,
                                       color: AaspasColors.black,
-                                      bgColor: AaspasColors.soft2,
+                                      // bgColor: AaspasColors.soft2,
                                       spacing: 10,
                                       showIcon: false,
                                       iconSize: 15,

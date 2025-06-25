@@ -12,7 +12,7 @@ class ItemChip extends StatefulWidget {
     // required this.onTap,
   });
 
-  final String itemName;
+  final String? itemName;
   final double width;
   // final VoidCallback onTap;
   @override
@@ -44,7 +44,7 @@ class _ItemChipState extends State<ItemChip> {
           Flexible(
             fit: FlexFit.tight,
             child: Text(
-              widget.itemName,
+              widget.itemName ?? 'Not Available',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               softWrap: true,
@@ -69,7 +69,7 @@ class _ItemChipState extends State<ItemChip> {
 class ItemChipClose extends StatefulWidget {
   const ItemChipClose({super.key, required this.itemName});
 
-  final String itemName;
+  final String? itemName;
   @override
   State<ItemChipClose> createState() => _ItemChipCloseState();
 }
@@ -77,6 +77,8 @@ class ItemChipClose extends StatefulWidget {
 class _ItemChipCloseState extends State<ItemChipClose> {
   @override
   Widget build(BuildContext context) {
+    print("///////////////////// in item chip close");
+    print(widget.itemName);
     return Container(
       constraints: BoxConstraints(
         minHeight: 55,
@@ -99,7 +101,7 @@ class _ItemChipCloseState extends State<ItemChipClose> {
           Flexible(
             // fit: FlexFit.tight,
             child: Text(
-              widget.itemName,
+              widget.itemName ?? 'Not Available',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               softWrap: true,

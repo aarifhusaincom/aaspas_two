@@ -106,7 +106,7 @@ class _LocationPermissionState extends State<LocationPermission> {
                       TextButton(
                         onPressed: () async {
                           // print("Privacy Policy Clicked");
-                          var url = 'https://aaspas-privacypolicy.aaspas.app/';
+                          var url = AaspasWizard.privacyPolicy;
                           // launch(url);
                           if (await canLaunch(url)) {
                             await launch(url);

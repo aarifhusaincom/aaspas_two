@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:aaspas/functions/location/LocationSetterAaspas.dart';
 import 'package:aaspas/widgets/image_slider/image_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -10,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../constant_and_api/aaspas_constant.dart';
+import '../../model/shop_details_model.dart';
 import '../../widgets/app_and_search_bar/appbar_only_back.dart';
 import '../../../widgets/buttons/custom_button.dart';
 import '../../../widgets/chips/category_chip.dart';
@@ -33,32 +35,89 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
   late String currentShopId;
 
   /// load new Shop method
-  void loadNewShop(String newShopId) {
-    if (newShopId == currentShopId) return;
+  bool _isLoadingNewShop =
+      false; // Use a specific flag for loading new shop via loadNewShop
+
+  void loadNewShop(String newShopId) async {
+    // Make it async
+    if (newShopId == currentShopId && !_isLoadingNewShop)
+      return; // Prevent re-entry if already loading new
+    if (_isLoadingNewShop) return; // Don't allow concurrent loads
 
     currentShopId = newShopId;
-    print("//////////////////////////// load new method");
-    print(currentShopId);
+    _isLoadingNewShop = true; // Set loading flag
+    print("//////////////////////////// load new shop: $currentShopId");
+
+    // Show loading state immediately for the page content
+    // This will replace the current shop details with a loading indicator
+    setState(() {
+      dataLoaded = false; // This flag controls the main loading Lottie
+    });
+
     _scrollController.animateTo(
       0,
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeOut,
     );
-    dataLoaded = false;
-    setState(() {});
-    fetchShopDetailsById();
-    getShopsCatItems();
+
+    try {
+      // Clear old data *before* fetching new data
+      _clearShopData();
+
+      // Fetch both sets of data. Consider using Future.wait if they can run in parallel
+      // and don't depend on each other for initial request parameters.
+      await fetchShopDetailsById(); // This will update its own part of the state and call setState
+      await getShopsCatItems(); // This will update its own part of the state and call setState
+
+      // After all data is fetched and individual setStates have run,
+      // update the main loading flag for the page.
+      isShopOpenNow = isShopOpen(
+        // Recalculate this
+        openTimeStr:
+            firstShopItem.openTime ??
+            "", // Ensure openTime/closeTime are not null
+        closeTimeStr: firstShopItem.closeTime ?? "",
+      );
+    } catch (e) {
+      print("Error loading new shop: $e");
+      // Handle error state, maybe show an error message
+      noDataFound = true; // Or a specific error flag
+    } finally {
+      // This setState will reflect the fully loaded new shop data
+      // or an error state if something went wrong.
+      setState(() {
+        dataLoaded =
+            true; // Allow build method to show content or "noDataFound"
+        _isLoadingNewShop = false; // Reset loading flag
+      });
+    }
+  }
+
+  void _clearShopData() {
+    // shopDetails.clear(); // If it's List<Items>
+    // shopDetails = []; // More direct for reassignment
+
+    // newImageLinks = [];
+    // workingDays = [];
+    // featuredCategories = [];
+    //
+    // noDataFound = false; // Reset no data found flag for the main shop details
+    //
+    // // Clear data for categories and items
+    // featuredCategoryDetails = [];
+    // othersCategories = [];
+    // featuredItems = [];
+    // otherItems = [];
+    // noDataFoundForCatsItems = false; // Reset this flag too
   }
 
   //------for same page refresh----- ends //
-  ///////////////////////////////////////////////////////////
 
+  ///////////////////////////////////////////////////////////
   bool noDataFoundForCatsItems = false;
   bool noDataFound = false;
   bool isShopOpenNow = false;
-
   bool dataLoaded = false;
-
   //////////////////////////////////////////////////
 
   List featuredCategoryDetails = [];
@@ -66,179 +125,187 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
   List featuredItems = [];
   List otherItems = [];
   Future<void> getShopsCatItems() async {
-    print("///////////////// getShopsCatItems() called");
-    /////////////////////////////////////
+    print("///////////////// getShopsCatItems() for $currentShopId");
     final String paramString = '?id=$currentShopId';
-    final url = '${AaspasApi.baseUrl}${AaspasApi.getShopsCatItems}$paramString';
-    /////////////////////////////////////
-
+    final url =
+        '${AaspasWizard.baseUrl}${AaspasWizard.getShopsCatItems}$paramString';
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
-      featuredItems = jsonData['items'][0]['featuredItems'] ?? [];
-      otherItems = jsonData['items'][0]['otherItems'] ?? [];
 
-      featuredCategoryDetails =
+      final newFeaturedItems = jsonData['items'][0]['featuredItems'] ?? [];
+      final newOtherItems = jsonData['items'][0]['otherItems'] ?? [];
+      final newFeaturedCategoryDetails =
           jsonData['category'][0]['featuredCategoryDetails'] ?? [];
-      othersCategories = jsonData['category'][0]['otherCategoryDetails'] ?? [];
-      print("//////////////////////////// featuredCategories");
-      print(featuredCategories);
-      print(othersCategories);
-      print(featuredItems);
-      print(otherItems);
-      print(openTime);
-      setState(() {});
+      final newOthersCategories =
+          jsonData['category'][0]['otherCategoryDetails'] ?? [];
+
+      setState(() {
+        // Call setState AFTER updating the variables
+        featuredItems = newFeaturedItems;
+        otherItems = newOtherItems;
+        featuredCategoryDetails = newFeaturedCategoryDetails;
+        othersCategories = newOthersCategories;
+        noDataFoundForCatsItems =
+            newFeaturedItems.isEmpty &&
+            newOtherItems.isEmpty &&
+            newFeaturedCategoryDetails.isEmpty &&
+            newOthersCategories.isEmpty;
+      });
+    } else {
+      print("Error fetching shop cats/items: ${response.statusCode}");
+      setState(() {
+        noDataFoundForCatsItems =
+            true; // Indicate error or no data for this part
+        featuredCategoryDetails = []; // Ensure lists are empty on error
+        othersCategories = [];
+        featuredItems = [];
+        otherItems = [];
+      });
     }
   }
 
   //////////////////////////////////////////////////
-  String video = '';
+  // List<Items> shopDetails = [];
 
-  List shopImages = [];
-  List<String> newImageLinks = [];
-  List workingDays = [];
+  // List shopImages = [];
+  List newImageLinks = [];
+  // List workingDays = [];
   List<dynamic> featuredCategories = [];
-  String shopName = "";
-  String address = "";
-  double lat = 0;
-  double long = 0;
-  String area = "";
-  String phoneNo = "";
-  String openTime = "";
-  String closeTime = "";
-  int pinCode = 0;
-  int shopNo = 0;
-  int showPhoneNumber = 0;
-  int verified = 0;
-  int showItemType = 0;
-  int active = 0;
-  double distanceKm = 0;
+
+  late dynamic firstShopItem;
   Future<void> fetchShopDetailsById() async {
-    print("///////////////// fetchShopDetailsById() called");
-    /////////////////////////////////////
+    print("///////////////// fetchShopDetailsById() for $currentShopId");
+    // No need to clear here if _clearShopData() is called in loadNewShop
+
     final String paramString =
         '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&id=$currentShopId';
     final url =
-        '${AaspasApi.baseUrl}${AaspasApi.getShopsDetailsById}$paramString';
-    /////////////////////////////////////
-
+        '${AaspasWizard.baseUrl}${AaspasWizard.getShopsDetailsById}$paramString';
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
-      // print(jsonData);
-      shopImages = jsonData['items'][0]['shopImages'] ?? [];
-      // print("///////////////////////////////////////////print 1");
-      // print(shopImages);
-      shopName = jsonData['items'][0]['shopName'].toString();
-      // print(shopName);
-      address = jsonData['items'][0]['address'].toString();
-      lat = jsonData['items'][0]['location']['coordinates'][1];
-      long = jsonData['items'][0]['location']['coordinates'][0];
-      area = jsonData['items'][0]['area'].toString();
-      // TODO: Handle video. and remove the default link
-      video =
-          jsonData['items'][0]['video'] ??
-          'https://github.com/aarifhusainwork/aaspas-storage-assets/raw/refs/heads/main/IndoreInstagram/other_reels/reels/1.mp4';
-      phoneNo =
-          (jsonData['items'][0]['phoneNo'] == null)
-              ? '8884446009'
-              : jsonData['items'][0]['phoneNo'].toString();
-      openTime = jsonData['items'][0]['openTime'].toString();
-      closeTime = jsonData['items'][0]['closeTime'].toString();
-      pinCode = jsonData['items'][0]['pincode'];
-      shopNo = jsonData['items'][0]['shopNo'];
-      showPhoneNumber = jsonData['items'][0]['showPhoneNumber'];
-      verified = jsonData['items'][0]['verified'];
-      showItemType = jsonData['items'][0]['showItemType'];
-      active = jsonData['items'][0]['active'] ?? 0;
-      distanceKm = jsonData['items'][0]['distanceKm'];
-      workingDays = jsonData['items'][0]['workingDays'] ?? [];
-      featuredCategories = jsonData['items'][0]['featuredCategories'] ?? [];
+      final model = ShopDetailsModel.fromJson(jsonData);
+      final newShopDetailItems = model.items ?? []; // Renamed for clarity
 
-      print("///////////////////////////////////////////All shop Deails");
-      // print(shopImages.isEmpty);
-      // print(shopName);
-      // print(address);
-      // print(lat);
-      // print(long);
-      // print(area);
-      // print(video);
-      // print(phoneNo);
-      // print(openTime);
-      // print(closeTime);
-      // print(pinCode);
-      // print(shopNo);
-      // print(showPhoneNumber);
-      // print(verified);
-      // print(showItemType);
-      // print(active);
-      // print(distanceKm);
-      // print(workingDays.join(","));
-      // print(featuredCategories.join(","));
-
-      if (shopImages.isEmpty) {
-        newImageLinks = [];
+      if (newShopDetailItems.isNotEmpty) {
+        // Assign new data
+        // It's crucial that ShopDetailsModel.Items has all the fields you need
+        // or you manually parse them from jsonData as before.
+        // Assuming your ShopDetailsModel is comprehensive:
+        firstShopItem = newShopDetailItems.first;
+        // print("/// Shop Images List");
+        // print(firstShopItem.shopImages);
+        cacheImageUrls(firstShopItem.shopImages);
         setState(() {
-          LocationSetterAaspas.getLocation();
-          // print(dataLoaded);
-          dataLoaded = true;
-          // print(dataLoaded);
+          // Update all state variables within ONE setState for this fetch
+          // shopDetails = newShopDetailItems; // Replace, don't add
+
+          featuredCategories =
+              firstShopItem.featuredCategories ??
+              []; // This is from shop details, distinct from getShopsCatItems()
+
+          // shopImages = firstShopItem.shopImages ?? [];
+          if (firstShopItem.shopImages.isNotEmpty) {
+            newImageLinks = List<dynamic>.from(
+              firstShopItem.shopImages,
+            ); // Create a new list
+          } else {
+            newImageLinks = [];
+          }
+          noDataFound = false; // Data was found
         });
       } else {
-        newImageLinks = List.generate(
-          shopImages.length,
-          // TODO: null exception chacha chai response does not have url key
-          (index) => shopImages[index]['url'] ?? AaspasImages.shopAltImage,
-        );
-        print("///////////////////////////////////////////newImageLinks");
-        // print(newImageLinks.join(","));
         setState(() {
-          LocationSetterAaspas.getLocation();
-          // print(dataLoaded);
-          dataLoaded = true;
-          // print(dataLoaded);
+          // Handle no data found for this specific shop ID
+          _clearShopData(); // Clear everything if the new shop ID returns no data
+          noDataFound = true;
+        });
+      }
+    } else {
+      print("Error fetching shop details: ${response.statusCode}");
+      setState(() {
+        _clearShopData(); // Clear everything on error
+        noDataFound = true; // Indicate error or no data
+      });
+    }
+  }
+
+  // Ensure initState and didChangeDependencies also manage dataLoaded correctly
+  @override
+  void initState() {
+    LocationSetterAaspas();
+    print("/////////////// init called");
+    // currentShopId is NOT initialized here, it comes from didChangeDependencies
+    super.initState();
+  }
+
+  dynamic
+  dataRouteArgs; // Renamed to avoid confusion with other 'data' variables
+  String? initialSid;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies(); // Call super first
+    LocationSetterAaspas.getLocation();
+    print("/////////////// didChangeDependencies called in shop details");
+
+    // Only fetch initial data if it hasn't been fetched yet for this instance of the page
+    if (dataRouteArgs == null) {
+      final args = ModalRoute.of(context)!.settings.arguments;
+      if (args != null && args is Map<String, dynamic>) {
+        dataRouteArgs = args;
+        initialSid = dataRouteArgs?['sid'];
+        if (initialSid != null) {
+          // Check if it's a new ID
+          currentShopId = initialSid!;
+          print("ShopDetailsPage: Initial load for shop ID: $currentShopId");
+          // Initial load sequence
+          setState(() {
+            dataLoaded = false; // Show loading indicator
+            _clearShopData(); // Clear any potential stale data
+          });
+          _fetchInitialData();
+        } else if (initialSid == null) {
+          // Handle case where sid is not provided, maybe show error or default state
+          setState(() {
+            dataLoaded = true; // Stop loading
+            noDataFound = true; // Indicate nothing to show
+          });
+        }
+      } else {
+        // Handle case where args are not as expected
+        setState(() {
+          dataLoaded = true; // Stop loading
+          noDataFound = true; // Indicate nothing to show
         });
       }
     }
   }
 
-  // @override
-  // void initState() {
-  //   print("/////////////// init called");
-  //   super.initState();
-  // }
-
-  dynamic data;
-  String? sid;
-  @override
-  void didChangeDependencies() {
-    LocationSetterAaspas();
-    print("/////////////// didChangeDependencies called");
-    if (data == null) {
-      final args = ModalRoute.of(context)!.settings.arguments;
-      if (args != null && args is Map<String, dynamic>) {
-        data = args;
-        sid = data?['sid'];
-        currentShopId = sid!;
-        fetchShopDetailsById().then((_) {
-          isShopOpenNow = isShopOpen(
-            openTimeStr: openTime,
-            closeTimeStr: closeTime,
-          );
-        });
-        getShopsCatItems();
-      }
+  Future<void> _fetchInitialData() async {
+    try {
+      await fetchShopDetailsById();
+      await getShopsCatItems();
+      isShopOpenNow = isShopOpen(
+        openTimeStr: firstShopItem.openTime ?? "",
+        closeTimeStr: firstShopItem.closeTime ?? "",
+      );
+    } catch (e) {
+      print("Error during initial data fetch: $e");
+      noDataFound = true;
+    } finally {
+      setState(() {
+        dataLoaded = true; // Content (or error) is ready to be shown
+      });
     }
-    // TODO: implement didChangeDependencies
-    super.didChangeDependencies();
   }
 
   /////////////////////////////////////////////////////
   String cleanTimeString(String input) {
-    print("///////////////////////////////////// clean Time called");
-    print(input);
+    // print("///////////////////////////////////// clean Time called");
+    // print(input);
     return input
         .replaceAll('\u202F', ' ') // narrow no-break space
         .replaceAll('\u00A0', ' ') // regular no-break space
@@ -247,9 +314,12 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
   }
 
   bool isShopOpen({required String openTimeStr, required String closeTimeStr}) {
-    print("///////////////////////////////////// isShopOpen called");
-    print(openTimeStr);
-    print(closeTimeStr);
+    if (isTodayOff(firstShopItem.workingDays)) {
+      return false;
+    }
+    // print("///////////////////////////////////// isShopOpen called");
+    // print(openTimeStr);
+    // print(closeTimeStr);
     final now = DateTime.now();
     // final format = DateFormat.jm(); // e.g., "11:00 AM"
     final format = DateFormat("hh:mm a"); // e.g., "11:00 AM"
@@ -296,7 +366,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
 
   void openMap() async {
     final Uri mapUri = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=$lat,$long',
+      'https://www.google.com/maps/search/?api=1&query=${firstShopItem.location?.coordinates?[1]},${firstShopItem.location?.coordinates?[0]}',
     );
 
     if (await canLaunchUrl(mapUri)) {
@@ -327,21 +397,67 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
   }
 
   ///------- today() End-------///
+
   ///------- isTodayOff() Start-------///
-  bool isTodayOff(List<String> workingDays) {
+  bool isTodayOff(List workingDays) {
     return !workingDays.contains(today());
   }
 
   ///------- isTodayOff() End-------///
+  ///
+  ///
+  /// isTodayAfter Starts
+  bool isTodayAfter(String dateString) {
+    // Parse the input date string to DateTime
+    final inputDate = DateTime.parse(dateString);
+
+    // Get today's date without time
+    final today = DateTime.now();
+    final todayDateOnly = DateTime(today.year, today.month, today.day);
+
+    // Compare
+    return !todayDateOnly.isAfter(inputDate);
+  }
+
+  /// isTodayAfter ends
+  /// formatDateTo_ddMMyyyy Starts
+  String formatDateTo_ddMMyyyy(String dateString) {
+    final date = DateTime.parse(dateString); // parses yyyy-MM-dd
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year.toString();
+
+    return '$day-$month-$year';
+  }
+
+  /// formatDateTo_ddMMyyyy Ends
+
+  /// cache shopImages Starts
+  Future<void> cacheImageUrls(List<String> urls) async {
+    final cacheManager = DefaultCacheManager();
+
+    for (final url in urls) {
+      try {
+        // Download and cache the file
+        await cacheManager.downloadFile(url);
+      } catch (e) {
+        print("Error caching $url: $e");
+      }
+    }
+  }
+
+  /// cache shopImages Ends
   @override
   Widget build(BuildContext context) {
+    // print("isTodayAfterfirstShopItem.offerExpiryDate");
+    // print(isTodayAfter(firstShopItem.offerExpiryDate));
     final orientation = MediaQuery.of(context).orientation;
     final currentSize = MediaQuery.of(context).size;
     final bool isMobile = currentSize.width < 600;
     final bool isTablet = currentSize.width >= 600 && currentSize.width < 1024;
     if (!dataLoaded) {
       return Scaffold(
-        body: Center(child: Lottie.asset(AaspasLottie.videoWave)),
+        body: Center(child: Lottie.asset(AaspasLottie.shopAnimation)),
       );
     }
     // if (shopData == null) {
@@ -397,7 +513,8 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                           alignment: Alignment.center,
                           children: [
                             ImageSlider(imageLinks: newImageLinks),
-                            if (video != '')
+                            if (firstShopItem.video != '' &&
+                                firstShopItem.video != null)
                               Positioned(
                                 bottom: 0,
                                 right: 0,
@@ -406,7 +523,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                     Navigator.pushNamed(
                                       context,
                                       '/single_video_player',
-                                      arguments: {'video': video},
+                                      arguments: {'video': firstShopItem.video},
                                     );
                                   },
                                   child: Stack(
@@ -441,6 +558,81 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                         child: Column(
                           spacing: 10,
                           children: [
+                            /// Offer Card for mobile
+                            if (isMobile &&
+                                firstShopItem.offer != '' &&
+                                firstShopItem.offer != null &&
+                                isTodayAfter(firstShopItem.offerExpiryDate))
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Color(0xFFDFFFD0),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    width: 2,
+                                    color: Color(0xFF46DD00),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  spacing: 6,
+                                  children: [
+                                    Lottie.asset(
+                                      width: 60,
+                                      height: 60,
+                                      AaspasLottie.offer,
+                                    ),
+                                    Flexible(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            firstShopItem.offer ?? "No offer",
+                                            textAlign: TextAlign.right,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 2,
+                                            style: GoogleFonts.roboto(
+                                              textStyle: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          Align(
+                                            alignment: Alignment.centerRight,
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 6,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                // color: AaspasColors.red,
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                "Offer expire on ${formatDateTo_ddMMyyyy(firstShopItem.offerExpiryDate)}" ??
+                                                    'Expired',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AaspasColors.red,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             // Shop Name
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 0),
@@ -452,7 +644,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      shopName,
+                                      firstShopItem.shopName,
                                       maxLines: 2,
                                       softWrap: true,
                                       overflow: TextOverflow.ellipsis,
@@ -465,7 +657,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                       ),
                                     ),
                                   ),
-                                  if (verified == 1)
+                                  if (firstShopItem.verified == 1)
                                     LabelCard(
                                       constraints: BoxConstraints(
                                         minWidth: 120,
@@ -492,7 +684,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                             SizedBox(
                               width: double.infinity,
                               child: Text(
-                                address,
+                                firstShopItem.address ?? '',
                                 maxLines: 5,
                                 softWrap: true,
                                 textAlign: TextAlign.left,
@@ -522,11 +714,11 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                       color: AaspasColors.soft2,
                                       borderRadius: BorderRadius.circular(4),
                                     ),
-                                    title: area,
+                                    title: firstShopItem.area!,
                                     fontSize: 15,
                                     horizontalPadding: 10,
                                     color: AaspasColors.black,
-                                    bgColor: AaspasColors.soft2,
+                                    // bgColor: AaspasColors.soft2,
                                     spacing: 0,
                                     showIcon: false,
                                     iconSize: 0,
@@ -586,46 +778,74 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                       spacing: 4,
                                       runSpacing: 6,
                                       children: [
-                                        SizedBox(
-                                          width: 65,
-                                          child: LabelCard(
-                                            decoration: BoxDecoration(
-                                              color: AaspasColors.soft2,
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
+                                        if (firstShopItem.shopType?.contains(
+                                          'Retail',
+                                        ))
+                                          SizedBox(
+                                            width: 65,
+                                            child: LabelCard(
+                                              decoration: BoxDecoration(
+                                                color: AaspasColors.soft2,
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              // TODO: Add Shop Type
+                                              title: "Retail",
+                                              fontSize: 14,
+                                              horizontalPadding: 10,
+                                              color: AaspasColors.primary,
+                                              // bgColor: AaspasColors.soft2,
+                                              spacing: 10,
+                                              showIcon: false,
+                                              iconSize: 15,
+                                              fontWeight: FontWeight.w700,
+                                              widthLabel: 100,
                                             ),
-                                            // TODO: Add Shop Type
-                                            title: "Retail",
-                                            fontSize: 14,
-                                            horizontalPadding: 10,
-                                            color: AaspasColors.primary,
-                                            bgColor: AaspasColors.soft2,
-                                            spacing: 10,
-                                            showIcon: false,
-                                            iconSize: 15,
-                                            fontWeight: FontWeight.w700,
-                                            widthLabel: 100,
                                           ),
-                                        ),
-                                        SizedBox(
-                                          width: 75,
-                                          child: LabelCard(
-                                            decoration: BoxDecoration(
-                                              color: AaspasColors.soft2,
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
+                                        if (firstShopItem.shopType?.contains(
+                                          'Service',
+                                        ))
+                                          SizedBox(
+                                            width: 75,
+                                            child: LabelCard(
+                                              decoration: BoxDecoration(
+                                                color: AaspasColors.soft2,
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              title: "Service",
+                                              fontSize: 14,
+                                              horizontalPadding: 10,
+                                              color: AaspasColors.primary,
+                                              // bgColor: AaspasColors.soft2,
+                                              spacing: 10,
+                                              showIcon: false,
+                                              iconSize: 15,
+                                              fontWeight: FontWeight.w700,
                                             ),
-                                            title: "Service",
-                                            fontSize: 14,
-                                            horizontalPadding: 10,
-                                            color: AaspasColors.primary,
-                                            bgColor: AaspasColors.soft2,
-                                            spacing: 10,
-                                            showIcon: false,
-                                            iconSize: 15,
-                                            fontWeight: FontWeight.w700,
                                           ),
-                                        ),
+                                        if (firstShopItem.shopType?.contains(
+                                          'Wholesale',
+                                        ))
+                                          SizedBox(
+                                            width: 100,
+                                            child: LabelCard(
+                                              decoration: BoxDecoration(
+                                                color: AaspasColors.soft2,
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              title: "Wholesale",
+                                              fontSize: 14,
+                                              horizontalPadding: 10,
+                                              color: AaspasColors.primary,
+                                              // bgColor: AaspasColors.soft2,
+                                              spacing: 10,
+                                              showIcon: false,
+                                              iconSize: 15,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
                                       ],
                                     ),
                                   ),
@@ -643,7 +863,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                         // (shopDetails[0].distance != null)
                                         //     ? "Direction ${shopDetails[0].distance!.toStringAsFixed(2)} KM"
                                         //     : "Direction NA",
-                                        "Direction ${distanceKm.toStringAsFixed(2)} KM",
+                                        "Direction ${firstShopItem.distanceKm!.toStringAsFixed(2)} KM",
                                     fontSize: 13,
                                     horizontalPadding: 10,
                                     color: AaspasColors.black,
@@ -717,7 +937,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                                 horizontal: 2,
                                               ),
                                               child: Text(
-                                                "$openTime - $closeTime",
+                                                "${firstShopItem.openTime} - ${firstShopItem.closeTime}",
                                                 textAlign: TextAlign.center,
                                                 style: GoogleFonts.roboto(
                                                   textStyle: TextStyle(
@@ -736,52 +956,45 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                           children: [
                                             WeekDayLetter(
                                               weekLetter: "M",
-                                              status: workingDays.contains(
-                                                'Monday',
-                                              ),
+                                              status: firstShopItem.workingDays
+                                                  .contains('Monday'),
                                             ),
                                             WeekDayLetter(
                                               weekLetter: "T",
-                                              status: workingDays.contains(
-                                                'Tuesday',
-                                              ),
+                                              status: firstShopItem.workingDays
+                                                  .contains('Tuesday'),
                                             ),
                                             WeekDayLetter(
                                               weekLetter: "W",
-                                              status: workingDays.contains(
-                                                'Wednesday',
-                                              ),
+                                              status: firstShopItem.workingDays
+                                                  .contains('Wednesday'),
                                             ),
                                             WeekDayLetter(
                                               weekLetter: "T",
-                                              status: workingDays.contains(
-                                                'Thursday',
-                                              ),
+                                              status: firstShopItem.workingDays
+                                                  .contains('Thursday'),
                                             ),
                                             WeekDayLetter(
                                               weekLetter: "F",
-                                              status: workingDays.contains(
-                                                'Friday',
-                                              ),
+                                              status: firstShopItem.workingDays
+                                                  .contains('Friday'),
                                             ),
                                             WeekDayLetter(
                                               weekLetter: "S",
-                                              status: workingDays.contains(
-                                                'Saturday',
-                                              ),
+                                              status: firstShopItem.workingDays
+                                                  .contains('Saturday'),
                                             ),
                                             WeekDayLetter(
                                               weekLetter: "S",
-                                              status: workingDays.contains(
-                                                'Sunday',
-                                              ),
+                                              status: firstShopItem.workingDays
+                                                  .contains('Sunday'),
                                             ),
                                           ],
                                         ),
                                       ],
                                     ),
                                   ),
-                                  if (showPhoneNumber == 1)
+                                  if (firstShopItem.showPhoneNumber == 1)
                                     SizedBox(
                                       width: 140,
                                       // color: Colors.cyan,
@@ -797,7 +1010,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                             onPressed: () async {
                                               // print("WhatsApp Clicked");
                                               var url =
-                                                  'https://api.whatsapp.com/send?phone=91$phoneNo&text=_*Aaspas+Hello*_';
+                                                  'https://api.whatsapp.com/send?phone=91${firstShopItem.phoneNo}&text=_*Aaspas+Hello*_';
                                               // launch(url);
                                               if (await canLaunch(url)) {
                                                 await launch(url);
@@ -819,7 +1032,8 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                               // print("Call Clicked");
                                               final Uri dialUri = Uri(
                                                 scheme: 'tel',
-                                                path: phoneNo,
+                                                path:
+                                                    "${firstShopItem.phoneNo}",
                                               );
                                               if (await canLaunchUrl(dialUri)) {
                                                 await launchUrl(dialUri);
@@ -858,39 +1072,113 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                   Column(
                     spacing: 10,
                     children: [
+                      /// Offer Card for tablet
+                      if (isTablet)
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Color(0xFFDFFFD0),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              width: 2,
+                              color: Color(0xFF46DD00),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            spacing: 6,
+                            children: [
+                              Lottie.asset(
+                                width: 60,
+                                height: 60,
+                                AaspasLottie.offer,
+                              ),
+                              Flexible(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      "20 % off on Earbud up to 50 ₹" * 1,
+                                      textAlign: TextAlign.right,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
+                                      style: GoogleFonts.roboto(
+                                        textStyle: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          // color: AaspasColors.red,
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          "Offer expire on 26-07-2025",
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: AaspasColors.red,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       // Shop Description
-                      SizedBox(
-                        width: double.infinity,
-                        // TODO: Remove this line and replace with the actual description
-                        child: Text(
-                          " Ye API me nhi aa rha h गरीब नवाज केटरर्स | गोश्त कोरमा, बटर चिकन, माँडे, ब्रियानी, सीक कबाब, चिकन फ्राय | शादी व पार्टी मे सभी प्रकार का खाना बनाने का ऑर्डर लिया जाता है |",
-                          maxLines: 5,
-                          softWrap: true,
-                          textAlign: TextAlign.left,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.roboto(
-                            textStyle: TextStyle(
-                              height: 1.2,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: AaspasColors.textHalfBlack,
+                      if (firstShopItem.description != null &&
+                          firstShopItem.description != '')
+                        SizedBox(
+                          width: double.infinity,
+                          // TODO: Remove this line and replace with the actual description
+                          child: Text(
+                            "${(firstShopItem.description == null && firstShopItem.description == '') ? 'No Description' : firstShopItem.description}",
+                            maxLines: 5,
+                            softWrap: true,
+                            textAlign: TextAlign.left,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.roboto(
+                              textStyle: TextStyle(
+                                height: 1.2,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: AaspasColors.textHalfBlack,
+                              ),
                             ),
                           ),
                         ),
-                      ),
                       // Items Chips + Category Chips
                       Column(
                         spacing: 16,
                         children: [
                           // All items/services of $shopName
-                          if (featuredItems.isNotEmpty && showItemType == 1)
+                          if (featuredItems.isNotEmpty &&
+                              firstShopItem.showItemType == 1)
                             Container(
                               alignment: Alignment.centerLeft,
                               // color: Colors.purple,
                               // height: 40,
                               width: double.infinity,
                               child: Text(
-                                "All items/services of $shopName",
+                                "All items/services of ${firstShopItem.shopName}",
                                 maxLines: 3,
                                 overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.roboto(
@@ -903,7 +1191,8 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                               ),
                             ),
                           // Items chips
-                          if (featuredItems.isNotEmpty && showItemType == 1)
+                          if (featuredItems.isNotEmpty &&
+                              firstShopItem.showItemType == 1)
                             SizedBox(
                               width: double.infinity,
                               child:
@@ -999,7 +1288,8 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                       ),
                             ),
                           //Category Chips
-                          if (featuredItems.isNotEmpty && showItemType == 1)
+                          if (featuredItems.isNotEmpty &&
+                              firstShopItem.showItemType == 1)
                             SizedBox(
                               width: double.infinity,
                               child:
@@ -1044,8 +1334,15 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                                       featuredCategoryDetails[index]['category_name'] ??
                                                       '',
                                                   imageUrl:
-                                                      featuredCategoryDetails[index]['category_image'] ??
-                                                      '',
+                                                      (featuredCategoryDetails[index]['category_image'] ==
+                                                              '')
+                                                          ? AaspasWizard
+                                                              .shopAltImage
+                                                          : (featuredCategoryDetails[index]['category_image'] ==
+                                                              null)
+                                                          ? AaspasWizard
+                                                              .shopAltImage
+                                                          : featuredCategoryDetails[index]['category_image'],
                                                 ),
                                               );
                                             } else {
@@ -1076,7 +1373,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                                       '',
                                                   imageUrl:
                                                       othersCategories[adjustedIndex]['category_image'] ??
-                                                      '',
+                                                      AaspasWizard.shopAltImage,
                                                 ),
                                               );
                                             }

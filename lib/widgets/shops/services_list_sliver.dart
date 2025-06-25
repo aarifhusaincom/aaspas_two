@@ -57,7 +57,7 @@ class _ServicesListSliverState extends State<ServicesListSliver> {
         '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize&categoryId=${widget.categoryId}';
 
     final url =
-        '${AaspasApi.baseUrl}${AaspasApi.getServicesByCategory}$paramString';
+        '${AaspasWizard.baseUrl}${AaspasWizard.getServicesByCategory}$paramString';
 
     final response = await http.get(Uri.parse(url));
 
@@ -120,9 +120,10 @@ class _ServicesListSliverState extends State<ServicesListSliver> {
                     onTap: () {
                       widget.onServiceTap!(serviceList[index].sId!);
                     },
-                    karigarName: "${serviceList[index].karigarName}",
+                    providerName: "${serviceList[index].providerName}",
                     charges: "${serviceList[index].charges}",
-                    image: "${serviceList[index].image}",
+                    image:
+                        serviceList[index].image ?? AaspasWizard.shopAltImage,
                     edgeInsets: EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 12,

@@ -39,7 +39,8 @@ class _ShopListSliverState extends State<ShopListSliver> {
   Future<void> fetchShops() async {
     final String paramString =
         '?featureCategoryId=${widget.featuredCatIds.join(',')}&lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize';
-    final url = '${AaspasApi.baseUrl}${AaspasApi.getRelatedShops}$paramString';
+    final url =
+        '${AaspasWizard.baseUrl}${AaspasWizard.getRelatedShops}$paramString';
 
     print(url);
     final response = await http.get(Uri.parse(url));
@@ -148,7 +149,7 @@ class _ShopListSliverState extends State<ShopListSliver> {
                   locLat: shopList[index].location!.coordinates![1].toString(),
                   locLong: shopList[index].location!.coordinates![0].toString(),
                   edgeInsets: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  image: "${shopList[index].bigImageUrl}",
+                  image: shopList[index].shopImage ?? AaspasWizard.shopAltImage,
                   shopName: "${shopList[index].shopName}",
                   shopAddress: "${shopList[index].address}",
                   currentDistance:
@@ -158,7 +159,7 @@ class _ShopListSliverState extends State<ShopListSliver> {
             } else {
               if (isLastPage) {
                 print(
-                  "//////////////////////////////////////////////////////////",
+                  "////////////////////////////////////////////shop_list_sliver",
                 );
                 print("End of Shop List");
                 return Padding(

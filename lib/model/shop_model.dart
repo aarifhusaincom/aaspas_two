@@ -10,19 +10,19 @@ class ShopModel {
     if (json['items'] != null) {
       items = <Items>[];
       json['items'].forEach((v) {
-        items!.add(Items.fromJson(v));
+        items!.add(new Items.fromJson(v));
       });
     }
     msg = json['msg'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['success'] = success;
-    if (items != null) {
-      data['items'] = items!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['success'] = this.success;
+    if (this.items != null) {
+      data['items'] = this.items!.map((v) => v.toJson()).toList();
     }
-    data['msg'] = msg;
+    data['msg'] = this.msg;
     return data;
   }
 }
@@ -33,8 +33,9 @@ class Items {
   String? address;
   Location? location;
   int? rating;
+  int? verified;
   double? distanceKm;
-  String? bigImageUrl;
+  String? shopImage;
 
   Items({
     this.sId,
@@ -42,8 +43,9 @@ class Items {
     this.address,
     this.location,
     this.rating,
+    this.verified,
     this.distanceKm,
-    this.bigImageUrl,
+    this.shopImage,
   });
 
   Items.fromJson(Map<String, dynamic> json) {
@@ -52,24 +54,26 @@ class Items {
     address = json['address'];
     location =
         json['location'] != null
-            ? Location.fromJson(json['location'])
+            ? new Location.fromJson(json['location'])
             : null;
     rating = json['rating'];
+    verified = json['verified'];
     distanceKm = json['distanceKm'];
-    bigImageUrl = json['bigImageUrl'];
+    shopImage = json['shopImage'] is String ? json['shopImage'] : '';
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['_id'] = sId;
-    data['shopName'] = shopName;
-    data['address'] = address;
-    if (location != null) {
-      data['location'] = location!.toJson();
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['_id'] = this.sId;
+    data['shopName'] = this.shopName;
+    data['address'] = this.address;
+    if (this.location != null) {
+      data['location'] = this.location!.toJson();
     }
-    data['rating'] = rating;
-    data['distanceKm'] = distanceKm;
-    data['bigImageUrl'] = bigImageUrl;
+    data['rating'] = this.rating;
+    data['verified'] = this.verified;
+    data['distanceKm'] = this.distanceKm;
+    data['shopImage'] = this.shopImage;
     return data;
   }
 }
@@ -86,9 +90,9 @@ class Location {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['type'] = type;
-    data['coordinates'] = coordinates;
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['type'] = this.type;
+    data['coordinates'] = this.coordinates;
     return data;
   }
 }

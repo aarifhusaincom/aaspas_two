@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constant_and_api/aaspas_constant.dart';
 import 'shop_card.dart';
@@ -30,35 +31,56 @@ class _ShopListSliverNearbyState extends State<ShopListSliverNearby> {
   Future<void> fetchShops() async {
     final String paramString =
         '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize';
-    final url = '${AaspasApi.baseUrl}${AaspasApi.getAllShops}$paramString';
+    final url =
+        '${AaspasWizard.baseUrl}${AaspasWizard.getAllShops}$paramString';
 
     // final url =
     //     'https://api-246icbhmiq-uc.a.run.app/user/getAllShopss?lng=75.913898&lat=22.733255&page=$currentPage&pageSize=$pageSize';
     // https://api-246icbhmiq-uc.a.run.app/user/getRelatedShops?featureCategoryId=67664e11f4ba7c1a43dcc92a,66893e0599cf4b887b496af6,67738f0d0d1fbaecf3b34bde&lat=22.734947954439914&lng=75.90894186451176&page=1&pageSize=20
-    final response = await http.get(Uri.parse(url));
 
-    if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-      final model = ShopModel.fromJson(jsonData);
+    try {
+      final response = await http.get(Uri.parse(url));
+      print("///////nearbyshops1");
+      print(url);
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
 
-      final newItems = model.items ?? [];
-      if (newItems.isEmpty) {
-        noDataFound = true;
+        final model = ShopModel.fromJson(jsonData);
+
+        final newItems = model.items ?? [];
+
+        if (newItems.isEmpty) {
+          noDataFound = true;
+        }
+
+        ////////////////////
+        setState(() {
+          shopList.addAll(newItems);
+          print("shopList[0]");
+          print(shopList[0].shopName);
+          print(shopList[0].shopImage);
+
+          isLastPage = newItems.length < pageSize;
+          // items = ["Item 4", "Item 5", "Item 6"];
+          if (shopList.length > maxListCount) {
+            shopList.removeRange(maxListCount, shopList.length);
+          }
+        });
+        ////////////
       }
 
-      ////////////////////
-      setState(() {
-        shopList.addAll(newItems);
-        isLastPage = newItems.length < pageSize;
-        // items = ["Item 4", "Item 5", "Item 6"];
-        if (shopList.length > maxListCount) {
-          shopList.removeRange(maxListCount, shopList.length);
-        }
-      });
-      ////////////
-    }
+      //////////////////////////////////////////////////
+    } // try
+    catch (e) {
+      // VITAL CHECK: Also check here in the catch block.
+      if (!mounted) {
+        return; // Exit the function early
+      }
 
-    //////////////////////////////////////////////////
+      setState(() {});
+      print('Error fetching nearby shops: $e');
+    }
   }
 
   @override
@@ -97,7 +119,9 @@ class _ShopListSliverNearbyState extends State<ShopListSliverNearby> {
           ),
         )
         : shopList.isEmpty
-        ? SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()))
+        ? SliverToBoxAdapter(
+          child: Center(child: Lottie.asset(AaspasLottie.sidemapsidelist)),
+        )
         : SliverList(
           delegate: SliverChildBuilderDelegate(childCount: shopList.length + 1, (
             context,
@@ -142,7 +166,7 @@ class _ShopListSliverNearbyState extends State<ShopListSliverNearby> {
                   openMap(latt: lat1, longg: long1); // your existing function
                 },
                 edgeInsets: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                image: shopList[index].bigImageUrl ?? AaspasImages.shopAltImage,
+                image: shopList[index].shopImage ?? AaspasWizard.shopAltImage,
                 shopName: "${shopList[index].shopName}",
                 shopAddress: "${shopList[index].address}",
                 currentDistance:
@@ -150,10 +174,8 @@ class _ShopListSliverNearbyState extends State<ShopListSliverNearby> {
               );
             } else {
               if (isLastPage) {
-                print(
-                  "//////////////////////////////////////////////////////////",
-                );
-                print("End of Shop List");
+                print("////////////////////////////////// sliver near by");
+                print("End of Shop List near by");
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Center(child: Text("End of List")),
@@ -164,7 +186,15 @@ class _ShopListSliverNearbyState extends State<ShopListSliverNearby> {
 
               return Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(
+                  child: Lottie.asset(
+                    AaspasLottie.sidemapsidelist,
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.fitWidth,
+                  ),
+                  // CircularProgressIndicator()
+                ),
               );
             }
             ///////////////////////////////////////////////////////

@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 
 import '../../constant_and_api/aaspas_constant.dart';
+import '../../functions/app_version/app_version_updater.dart';
 import 'category_card.dart';
 
 class CategoryGridView extends StatefulWidget {
@@ -39,12 +41,13 @@ class _CategoryGridViewState extends State<CategoryGridView> {
   /////// getAllCategories()
   Future<List<Map<String, dynamic>>> getAllCategories() async {
     final String paramString = '?page=$page&pageSize=$pageSize';
-    final url = '${AaspasApi.baseUrl}${AaspasApi.getAllCategories}$paramString';
+    final url =
+        '${AaspasWizard.baseUrl}${AaspasWizard.getAllCategories}$paramString';
 
     final response = await http.get(Uri.parse(url));
-    var allCategoriesData = jsonDecode(response.body.toString());
-
     if (response.statusCode == 200) {
+      var allCategoriesData = jsonDecode(response.body.toString());
+      print(allCategoriesData);
       for (Map<String, dynamic> i in allCategoriesData["items"]) {
         allCategoriesList.add(i);
       }
@@ -58,6 +61,17 @@ class _CategoryGridViewState extends State<CategoryGridView> {
   //
 
   //
+  // @override
+  // void initState() {
+  //   // TODO: implement initState
+  //   super.initState();
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     if (mounted) {
+  //       // context is fully available here
+  //       AppVersionUpdater.sendToUpdaterScreen(context);
+  //     }
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +79,9 @@ class _CategoryGridViewState extends State<CategoryGridView> {
       future: getAllCategories(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Center(child: Text("Loading"));
+          return Center(
+            child: Center(child: Lottie.asset(AaspasLottie.infiniteWithBall)),
+          );
         } else {
           return
           //

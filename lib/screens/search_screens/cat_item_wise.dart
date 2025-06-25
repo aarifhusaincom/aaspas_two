@@ -37,17 +37,21 @@ class _CatItemWiseState extends State<CatItemWise> {
       final args = ModalRoute.of(context)!.settings.arguments;
       if (args != null && args is Map<String, dynamic>) {
         data = args;
-        id = data?['id'];
-        name = data?['name'];
-        imageUrl = data?['imageUrl'];
-        categoryType = data?['categoryType'];
-        cardType = data?['cardType']; // send me category or item
+        id = data?['id'] ?? '';
+        name = data?['name'] ?? '';
+        imageUrl = data?['imageUrl'] ?? '';
+        categoryType = data?['categoryType'] ?? '';
+        cardType = data?['cardType'] ?? ''; // send me category or item
         print('/////////////////////// Data received at cat_item_wise');
-        print(id);
-        print(name);
-        print(imageUrl);
-        print(categoryType);
-        print(cardType);
+        print("id = $id");
+        print("name = $name");
+        print("imageUrl = $imageUrl");
+        print("categoryType = $categoryType");
+        print("cardType = $cardType");
+        print(
+          "(categoryType == 'properties') = ${(categoryType == 'Properties')}",
+        );
+        print("(categoryType == 'services') = ${(categoryType == 'Services')}");
       }
     }
     // TODO: implement didChangeDependencies
@@ -57,6 +61,10 @@ class _CatItemWiseState extends State<CatItemWise> {
 
   @override
   Widget build(BuildContext context) {
+    print("//// ---- in CatItemWise imageUrl---- ////");
+    print(imageUrl);
+    print("//// ----is ? cardType == category---- ////");
+    print(cardType == "category");
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppbarOnlyBack(title: "Related Search"),
@@ -111,11 +119,10 @@ class _CatItemWiseState extends State<CatItemWise> {
             width: double.infinity,
             alignment: Alignment.centerLeft,
             child: Text(
-              "Related Shops Nearby",
+              "Related ${(cardType == "category") ? categoryType : name} Nearby",
               softWrap: true,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-
               style: GoogleFonts.roboto(
                 textStyle: TextStyle(
                   fontSize: 16,
@@ -129,21 +136,24 @@ class _CatItemWiseState extends State<CatItemWise> {
           // Near by shops builder non Sliver
 
           // If come via category Card
-          if (categoryType != null && cardType == "category")
+          // if (categoryType != null && cardType == "category")
+          if (cardType == "category")
             Expanded(
               child:
-                  (categoryType == 'properties')
+                  (categoryType == 'properties' || categoryType == 'Properties')
                       ? PropertyListNonSliver(id: '$id')
-                      : (categoryType == 'services')
+                      : (categoryType == 'services' ||
+                          categoryType == 'Services')
                       ? ServicesListNonSliver(id: id)
                       : ShopListNonSliver(shopFor: cardType, id: id),
             ),
 
           // If come via item Card
-          if (id != null && cardType == "item")
+          //   if (id != null && cardType == "item")
+          if (cardType == "item")
             Expanded(
               child:
-                  (categoryType == 'shops')
+                  (categoryType == 'shops' || categoryType == 'Shops')
                       ? ShopListNonSliver(shopFor: cardType, id: id)
                       : PropertyListNonSliver(id: '$id'),
             ),

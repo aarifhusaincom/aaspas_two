@@ -1,8 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import '../../constant_and_api/aaspas_constant.dart';
+import '../../functions/location/LocationSetterAaspas.dart';
+import '../../functions/wizard.dart';
+import '../../model/wizard_model.dart';
 import '../buttons/custom_button.dart';
 
 class HomeAppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -17,12 +23,53 @@ class HomeAppBar extends StatefulWidget implements PreferredSizeWidget {
 
 class _HomeAppBarState extends State<HomeAppBar> {
   ////
-  String location = "Khajrana Indore";
+
   String flexibleSpaceImage = "https://picsum.photos/600";
   double listHeight = 80;
+  String location = "Fetching Location...";
+
+  Future<String> getUserArea() async {
+    final response1 = await http.get(Uri.parse(AaspasStrings.wizardUrl));
+    String baseUrl = "";
+
+    if (response1.statusCode == 200) {
+      final jsonData = json.decode(response1.body);
+      final model = WizardModel.fromJson(jsonData);
+      baseUrl = model.api!.baseUrl!;
+    }
+    final String paramString =
+        '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}';
+    final url = '${baseUrl}${AaspasWizard.getUserArea}$paramString';
+    print("//homebarurl");
+    print(url);
+    final response2 = await http.get(Uri.parse(url));
+    print("response.statusCode");
+    print(response2.statusCode);
+    print(AaspasWizard.baseUrl);
+
+    if (response2.statusCode == 200) {
+      final jsonData = json.decode(response2.body);
+      print("/////homebar");
+      print("${jsonData['area']}, ${jsonData['city']}");
+      return "${jsonData['area']}, ${jsonData['city']}";
+    } else {
+      return '';
+    }
+  }
+
+  void fetchUserArea() async {
+    final area = await getUserArea();
+    setState(() {
+      location = area;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    LocationSetterAaspas.getLocation().then((e) {
+      fetchUserArea();
+    });
   }
 
   //
@@ -36,10 +83,10 @@ class _HomeAppBarState extends State<HomeAppBar> {
       ),
 
       title: Text(
-        AaspasStrings.appName,
+        AaspasWizard.appName,
         style: GoogleFonts.sansita(
           textStyle: TextStyle(
-            fontSize: 28,
+            fontSize: AaspasWizard.appNameFontSize.toDouble(),
             letterSpacing: 2.0,
             color: AaspasColors.primary,
             fontWeight: FontWeight.w900,
@@ -80,7 +127,7 @@ class _HomeAppBarState extends State<HomeAppBar> {
                 child: CustomButton(
                   onPressed: () async {
                     print("WhatsApp Clicked");
-                    var url = AaspasStrings.whatsappHelp;
+                    var url = AaspasWizard.whatsAppHelp;
                     // launch(url);
                     if (await canLaunch(url)) {
                       await launch(url);

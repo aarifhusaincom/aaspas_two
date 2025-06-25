@@ -50,6 +50,7 @@ class CategoryCard extends StatelessWidget {
             //   },
             // ),
             //
+            // uncomment this if you want to use cached network image
             child: CachedNetworkImage(
               imageUrl: categoryImage,
               fit: BoxFit.cover,

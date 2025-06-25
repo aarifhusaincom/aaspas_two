@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:aaspas/constant_and_api/aaspas_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
+import '../../reels/reel_cache.dart';
 import 'reel_card.dart';
 
 import '../../model/reel_model.dart';
@@ -16,7 +18,7 @@ class ReelsSlideView extends StatefulWidget {
 
 class _ReelsSlideViewState extends State<ReelsSlideView> {
   //////////////////////////////////////////////////
-  List<Items> reelList = [];
+
   int currentPage = 1;
   int pageSize = 20;
   bool isLastPage = false;
@@ -28,7 +30,8 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
   Future<void> fetchReels() async {
     final String paramString =
         '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize';
-    final url = '${AaspasApi.baseUrl}${AaspasApi.getAllReels}$paramString';
+    final url =
+        '${AaspasWizard.baseUrl}${AaspasWizard.getAllReels}$paramString';
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
@@ -37,7 +40,7 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
 
       final newItems = model.items ?? [];
       if (newItems.isEmpty) {
-        if (reelList.isEmpty) {
+        if (ReelCache.reelList.isEmpty) {
           noDataFound = true;
         }
         isLastPage = newItems.length < pageSize;
@@ -45,24 +48,27 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
 
       ////////////////////
       setState(() {
-        reelList.addAll(newItems);
+        ReelCache.reelList.addAll(newItems);
 
-        print("/////////////////////////////// Current Page");
-        print(currentPage);
-
-        print("/////////////////////////////// Page Size");
-        print(pageSize);
-
-        print("/////////////////////////////// new Item Length");
-        print(newItems.length);
-
-        print("/////////////////////////// Current Reel List item Count");
-        print(reelList.length);
+        // print("/////////////////////////////// Current Page");
+        // print(currentPage);
+        //
+        // print("/////////////////////////////// Page Size");
+        // print(pageSize);
+        //
+        // print("/////////////////////////////// new Item Length");
+        // print(newItems.length);
+        //
+        // print("/////////////////////////// Current Reel List item Count");
+        // print(ReelCache.reelList.length);
 
         isLastPage = newItems.length < pageSize;
 
-        if (reelList.length > maxListCount) {
-          reelList.removeRange(maxListCount, reelList.length);
+        if (ReelCache.reelList.length > maxListCount) {
+          ReelCache.reelList.removeRange(
+            maxListCount,
+            ReelCache.reelList.length,
+          );
         }
       });
       ////////////
@@ -73,6 +79,7 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
 
   @override
   void initState() {
+    ReelCache.reelList = [];
     super.initState();
     fetchReels();
   }
@@ -84,7 +91,7 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
           automaticallyImplyLeading: false,
           snap: true,
           floating: true,
-          backgroundColor: Colors.white,
+          backgroundColor: Color(0x00FFFFFF),
           toolbarHeight: 175,
           expandedHeight: 200,
           flexibleSpace: Container(
@@ -94,7 +101,7 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
             ),
           ),
         )
-        : reelList.isEmpty
+        : ReelCache.reelList.isEmpty
         ? SliverAppBar(
           automaticallyImplyLeading: false,
           snap: true,
@@ -103,7 +110,9 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
           toolbarHeight: 175,
           expandedHeight: 200,
           flexibleSpace: Container(
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(
+              child: Lottie.asset(AaspasLottie.reelsAnimation, height: 200),
+            ),
           ),
         )
         : SliverAppBar(
@@ -124,7 +133,7 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
               scrollDirection: Axis.horizontal,
 
               padding: EdgeInsets.all(5),
-              itemCount: reelList.length + 1,
+              itemCount: ReelCache.reelList.length + 1,
               itemBuilder: (context, int index) {
                 ////////////////////////////////
                 if (noDataFound) {
@@ -147,10 +156,17 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
                   );
                 }
                 ///////////////////////////////////////
-                if (index < reelList.length) {
+                if (index < ReelCache.reelList.length) {
+                  print(
+                    "ReelCache.reelList.length = ${ReelCache.reelList.length}",
+                  );
+                  print(
+                    "////// ReelCache.reelList[index] = ${ReelCache.reelList[index].url} ",
+                  );
                   return ReelCard(
                     reelIndex: index,
-                    thumbnailUrl: "${reelList[index].thumbnailUrl}",
+                    thumbnailUrl: "${ReelCache.reelList[index].thumbnailUrl}",
+                    totalViews: ReelCache.reelList[index].views ?? 0,
                   );
                 } else {
                   if (isLastPage) {

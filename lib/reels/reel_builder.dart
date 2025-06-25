@@ -1,3 +1,4 @@
+import 'package:aaspas/reels/on_scroll_fetch_videos.dart';
 import 'package:flutter/material.dart';
 import '../../reels/reel_cache.dart';
 import '../../reels/reel_ui.dart';
@@ -62,24 +63,28 @@ class _VideoScrollScreenState extends State<VideoScrollScreen> {
         reelIndex = data?['reelIndex'];
 
         ///////// init thing in didchangedepend
+
         ReelCache.currentPage = reelIndex!;
-        ReelCache.fetchVideos()
-            .then((fetchedVideos) {
-              setState(() {
-                ReelCache.videos = fetchedVideos;
-                // _isLoading = false; // Set to false when data is load
-                // print(
-                //   "(reel builder init nextTwoVideosDownload() downloading 2 videos) ",
-                // );
-                ReelCache.nextTwoVideosDownload(reelIndex!);
-              });
-            })
-            .catchError((error) {
-              // Handle error appropriately, maybe show an error message
-              setState(() {
-                // _isLoading = false; // Also set to false on error
-              });
-            });
+        // ReelCache.fetchVideos()
+        //     .then((fetchedVideos) {
+        //       setState(() {
+        //         ReelCache.reelList = fetchedVideos;
+        //         // _isLoading = false; // Set to false when data is load
+        //         // print(
+        //         //   "(reel builder init nextTwoVideosDownload() downloading 2 videos) ",
+        //         // );
+        //         ReelCache.nextTwoVideosDownload(reelIndex!);
+        //       });
+        //     })
+        //     .catchError((error) {
+        //       // Handle error appropriately, maybe show an error message
+        //       setState(() {
+        //         // _isLoading = false; // Also set to false on error
+        //       });
+        //     });
+        setState(() {
+          ReelCache.nextTwoVideosDownload(reelIndex!);
+        });
         _pageController = PageController(initialPage: reelIndex!);
         ///////// init thing in didchangedepend
       }
@@ -93,7 +98,7 @@ class _VideoScrollScreenState extends State<VideoScrollScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body:
-          ReelCache.videos.isEmpty
+          ReelCache.reelList.isEmpty
               // _isLoading
               // ? Center(child: CircularProgressIndicator())
               ? Center(
@@ -113,9 +118,13 @@ class _VideoScrollScreenState extends State<VideoScrollScreen> {
                 onPageChanged: ReelCache.onPageChangeFunction,
                 controller: _pageController,
                 scrollDirection: Axis.vertical,
-                itemCount: ReelCache.videos.length,
+                // itemCount: ReelCache.videos.length,
+                itemCount: ReelCache.reelList.length,
                 itemBuilder: (context, index) {
-                  return VideoPlayerItem(videoUrl: ReelCache.videos[index]);
+                  // return VideoPlayerItem(videoUrl: ReelCache.videos[index]);
+                  return VideoPlayerItem(
+                    videoUrl: ReelCache.reelList[index].url!,
+                  );
                 },
               ),
     );

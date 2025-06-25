@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:aaspas/widgets/property/property_card.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 import '../../constant_and_api/aaspas_constant.dart';
 import '../../model/PropertyByCategoryModel.dart';
 
@@ -54,7 +55,7 @@ class _PropertyListNonSliverState extends State<PropertyListNonSliver> {
     final String paramString =
         '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize&categoryId=${widget.id}';
     url =
-        '${AaspasApi.baseUrl}${AaspasApi.getPropertiesByCategoryId}$paramString';
+        '${AaspasWizard.baseUrl}${AaspasWizard.getPropertiesByCategoryId}$paramString';
 
     final response = await http.get(Uri.parse(url));
 
@@ -78,6 +79,11 @@ class _PropertyListNonSliverState extends State<PropertyListNonSliver> {
 
   @override
   Widget build(BuildContext context) {
+    final currentSize = MediaQuery.of(context).size;
+    print("/////////////////// property list non sliver running");
+    print("/////////////////propertyList[0].images");
+    // print(propertyList[0].images!.isEmpty);
+
     if (noDataFound) {
       return Center(child: Text("No Data Found"));
     }
@@ -88,28 +94,48 @@ class _PropertyListNonSliverState extends State<PropertyListNonSliver> {
       itemBuilder: (context, index) {
         if (index < propertyList.length) {
           // final item = propertyList[index];
-          return PropertyCard(
-            brokerageType: '${propertyList[index].brokerageType}',
-            actualPrice: propertyList[index].actualPrice!,
-            area: propertyList[index].area!,
-            edgeInsets: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-            city: '${propertyList[index].city}',
-            phoneNo: '${propertyList[index].phoneNo}',
-            propertyTitle: '${propertyList[index].title}',
-            totalArea: propertyList[index].totalArea!,
-            visualPrice: '${propertyList[index].visualPrice}',
-            image:
-                jsonData['items'][index]['images'].length == 0
-                    ? "assets/images/shopPlaceholder.png"
-                    : jsonData['items'].length == 0
-                    ? "assets/images/shopPlaceholder.png"
-                    : "${jsonData['items'][index]['images'][0]['url']}",
+          return InkWell(
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                "/property_details",
+                arguments: {"sid": "${propertyList[index].sId}"},
+              );
+            },
+            child: PropertyCard(
+              brokerageType: '${propertyList[index].brokerageType}',
+              actualPrice: propertyList[index].actualPrice!,
+              area: propertyList[index].area!,
+              edgeInsets: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+              city: '${propertyList[index].city}',
+              phoneNo: '${propertyList[index].phoneNo}',
+              propertyTitle: '${propertyList[index].title}',
+              totalArea: propertyList[index].totalArea!,
+              visualPrice: '${propertyList[index].visualPrice}',
+              // image:
+              //     jsonData['items'][index]['images'].length == 0
+              //         ? "assets/images/shopPlaceholder.png"
+              //         : jsonData['items'].length == 0
+              //         ? "assets/images/shopPlaceholder.png"
+              //         : "${jsonData['items'][index]['images'][0]['url']}",
+              image:
+                  (propertyList[index].images != null &&
+                          propertyList[index].images != "")
+                      ? propertyList[index].images!
+                      : AaspasWizard.shopAltImage,
+            ),
           );
         } else {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(),
+              child: Lottie.asset(
+                AaspasLottie.sidemapsidelist,
+                width: currentSize.width > 400 ? 400 : currentSize.width,
+                // height: double.infinity,
+                fit: BoxFit.fitWidth,
+              ),
+              // CircularProgressIndicator(),
             ),
           );
         }

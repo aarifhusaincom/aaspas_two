@@ -8,7 +8,7 @@ class LabelCard extends StatelessWidget {
   const LabelCard({
     super.key,
     required this.title,
-    this.bgColor = Colors.white,
+    // this.bgColor = Colors.white,
     this.color = Colors.black,
     this.spacing = 6,
     this.iconSize = 24,
@@ -40,7 +40,7 @@ class LabelCard extends StatelessWidget {
   final double iconSize;
 
   // Background
-  final Color bgColor;
+  // final Color bgColor;
   final BoxDecoration? decoration;
   final BoxConstraints? constraints;
 

@@ -10,7 +10,7 @@ class PropertyCardModel {
     if (json['items'] != null) {
       items = <Items>[];
       json['items'].forEach((v) {
-        items!.add(new Items.fromJson(v));
+        items!.add(Items.fromJson(v));
       });
     }
     msg = json['msg'];
@@ -34,7 +34,7 @@ class Items {
   String? visualPrice;
   int? totalArea;
   String? area;
-  List<Images>? images;
+  List<dynamic>? images;
   int? phoneNo;
   String? brokerageType;
   String? city;
@@ -61,12 +61,7 @@ class Items {
     visualPrice = json['visual_price'];
     totalArea = json['totalArea'];
     area = json['area'];
-    if (json['images'] != null) {
-      images = <Images>[];
-      json['images'].forEach((v) {
-        images!.add(new Images.fromJson(v));
-      });
-    }
+    images = json['images'];
     phoneNo = json['phoneNo'];
     brokerageType = json['brokerageType'];
     city = json['city'];
@@ -74,39 +69,18 @@ class Items {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['_id'] = this.sId;
-    data['title'] = this.title;
-    data['actual_price'] = this.actualPrice;
-    data['visual_price'] = this.visualPrice;
-    data['totalArea'] = this.totalArea;
-    data['area'] = this.area;
-    if (this.images != null) {
-      data['images'] = this.images!.map((v) => v.toJson()).toList();
-    }
-    data['phoneNo'] = this.phoneNo;
-    data['brokerageType'] = this.brokerageType;
-    data['city'] = this.city;
-    data['distanceKm'] = this.distanceKm;
-    return data;
-  }
-}
-
-class Images {
-  String? key;
-  String? url;
-
-  Images({this.key, this.url});
-
-  Images.fromJson(Map<String, dynamic> json) {
-    key = json['key'];
-    url = json['url'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['key'] = this.key;
-    data['url'] = this.url;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['_id'] = sId;
+    data['title'] = title;
+    data['actual_price'] = actualPrice;
+    data['visual_price'] = visualPrice;
+    data['totalArea'] = totalArea;
+    data['area'] = area;
+    data['images'] = images;
+    data['phoneNo'] = phoneNo;
+    data['brokerageType'] = brokerageType;
+    data['city'] = city;
+    data['distanceKm'] = distanceKm;
     return data;
   }
 }

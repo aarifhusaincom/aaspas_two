@@ -1,16 +1,18 @@
+import 'package:aaspas/functions/app_version/app_version_updater.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../constant_and_api/aaspas_constant.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class LocationDenied extends StatefulWidget {
-  const LocationDenied({super.key});
+import '../../constant_and_api/aaspas_constant.dart';
+
+class AppUpdateScreen extends StatefulWidget {
+  const AppUpdateScreen({super.key});
 
   @override
-  State<LocationDenied> createState() => _LocationDeniedState();
+  State<AppUpdateScreen> createState() => _AppUpdateScreenState();
 }
 
-class _LocationDeniedState extends State<LocationDenied> {
+class _AppUpdateScreenState extends State<AppUpdateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,7 +53,7 @@ class _LocationDeniedState extends State<LocationDenied> {
                       SizedBox(
                         width: double.infinity,
                         child: Text(
-                          "Turn on location permission",
+                          "You are using older version",
                           textAlign: TextAlign.start,
                           style: GoogleFonts.roboto(
                             textStyle: TextStyle(
@@ -64,7 +66,7 @@ class _LocationDeniedState extends State<LocationDenied> {
                         ),
                       ),
                       Text(
-                        "Please go to Settings -> Location to turn on Location permission",
+                        "Please go to PlayStore and update the latest version to continue using the app.",
                         textAlign: TextAlign.start,
 
                         style: GoogleFonts.roboto(
@@ -79,10 +81,7 @@ class _LocationDeniedState extends State<LocationDenied> {
 
                       FilledButton(
                         onPressed: () async {
-                          bool opened = await openAppSettings();
-                          if (!opened) {
-                            // Handle failure to open settings
-                          }
+                          AppVersionUpdater.openPlayStore();
                         },
                         style: ButtonStyle(
                           minimumSize: WidgetStateProperty.all(
@@ -109,7 +108,7 @@ class _LocationDeniedState extends State<LocationDenied> {
                             AaspasColors.primary,
                           ),
                         ),
-                        child: const Text('App Settings'),
+                        child: const Text('Open PlayStore'),
                       ),
                     ],
                   ),

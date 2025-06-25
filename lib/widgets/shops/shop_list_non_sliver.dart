@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:aaspas/constant_and_api/aaspas_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'shop_card.dart';
 
@@ -53,19 +54,20 @@ class _ShopListNonSliverState extends State<ShopListNonSliver> {
     if (widget.shopFor == "nearBy") {
       final String paramString =
           '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize';
-      url = '${AaspasApi.baseUrl}${AaspasApi.getAllShops}$paramString';
+      url = '${AaspasWizard.baseUrl}${AaspasWizard.getAllShops}$paramString';
     }
 
     if (widget.shopFor == "category") {
       final String paramString =
           '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize&categoryId=${widget.id}';
-      url = '${AaspasApi.baseUrl}${AaspasApi.getShopsByCategory}$paramString';
+      url =
+          '${AaspasWizard.baseUrl}${AaspasWizard.getShopsByCategory}$paramString';
     }
 
     if (widget.shopFor == "item") {
       final String paramString =
           '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize&itemId=${widget.id}';
-      url = '${AaspasApi.baseUrl}${AaspasApi.getShopsByItem}$paramString';
+      url = '${AaspasWizard.baseUrl}${AaspasWizard.getShopsByItem}$paramString';
     }
 
     final response = await http.get(Uri.parse(url));
@@ -90,6 +92,7 @@ class _ShopListNonSliverState extends State<ShopListNonSliver> {
 
   @override
   Widget build(BuildContext context) {
+    print("/////////////////// shop list non sliver running");
     if (noDataFound) {
       return Center(child: Text("No Data Found"));
     }
@@ -130,7 +133,7 @@ class _ShopListNonSliverState extends State<ShopListNonSliver> {
               openMap(latt: lat1, longg: long1); // your existing function
             },
             edgeInsets: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-            image: "${shopList[index].bigImageUrl}",
+            image: shopList[index].shopImage ?? AaspasWizard.shopAltImage,
             shopName: "${shopList[index].shopName}",
             shopAddress: "${shopList[index].address}",
             currentDistance:
@@ -142,7 +145,13 @@ class _ShopListNonSliverState extends State<ShopListNonSliver> {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(),
+              child: Lottie.asset(
+                AaspasLottie.sidemapsidelist,
+                // width: double.infinity,
+                // height: double.infinity,
+                // fit: BoxFit.fitWidth,
+              ),
+              // CircularProgressIndicator(),
             ),
           );
         }

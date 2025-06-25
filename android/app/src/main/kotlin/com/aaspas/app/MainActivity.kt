@@ -1,4 +1,4 @@
-package com.aaspas.two.aaspas_two
+package com.aaspas.app
 
 import io.flutter.embedding.android.FlutterActivity
 

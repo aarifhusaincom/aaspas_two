@@ -10,7 +10,7 @@ class CategoryChip extends StatefulWidget {
     required this.imageUrl,
     required this.catName,
   });
-  final String imageUrl;
+  final String? imageUrl;
   final String catName;
   @override
   State<CategoryChip> createState() => _CategoryChipState();
@@ -19,6 +19,8 @@ class CategoryChip extends StatefulWidget {
 class _CategoryChipState extends State<CategoryChip> {
   @override
   Widget build(BuildContext context) {
+    print('//////////////imageUrl in category chip build method');
+    print(widget.imageUrl);
     return Container(
       constraints: BoxConstraints(
         maxWidth: 174,
@@ -57,7 +59,7 @@ class _CategoryChipState extends State<CategoryChip> {
             clipBehavior: Clip.hardEdge,
 
             child: CachedNetworkImage(
-              imageUrl: widget.imageUrl,
+              imageUrl: widget.imageUrl ?? AaspasWizard.shopAltImage,
               fit: BoxFit.cover,
               errorWidget:
                   (context, url, error) => Image.asset(
@@ -98,7 +100,7 @@ class CategoryChipClose extends StatefulWidget {
     required this.imageUrl,
     required this.catName,
   });
-  final String imageUrl;
+  final String? imageUrl;
   final String catName;
   @override
   State<CategoryChipClose> createState() => _CategoryChipCloseState();
@@ -107,6 +109,9 @@ class CategoryChipClose extends StatefulWidget {
 class _CategoryChipCloseState extends State<CategoryChipClose> {
   @override
   Widget build(BuildContext context) {
+    print("///////////////////// in category chip close");
+    print(widget.imageUrl);
+    print(widget.catName);
     return Container(
       padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
       decoration: BoxDecoration(
@@ -139,7 +144,7 @@ class _CategoryChipCloseState extends State<CategoryChipClose> {
             clipBehavior: Clip.hardEdge,
 
             child: CachedNetworkImage(
-              imageUrl: widget.imageUrl,
+              imageUrl: widget.imageUrl ?? AaspasWizard.shopAltImage,
               fit: BoxFit.cover,
               errorWidget:
                   (context, url, error) => Image.asset(

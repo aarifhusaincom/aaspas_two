@@ -233,7 +233,7 @@ class PropertyCard extends StatelessWidget {
                                     horizontalPadding: 10,
                                     verticalPadding: 4,
                                     color: AaspasColors.black,
-                                    bgColor: AaspasColors.soft2,
+                                    // bgColor: AaspasColors.soft2,
                                     spacing: 10,
                                     showIcon: false,
                                     iconSize: 15,
@@ -255,7 +255,7 @@ class PropertyCard extends StatelessWidget {
                                         brokerageType == "Brokerage"
                                             ? AaspasColors.red
                                             : AaspasColors.green,
-                                    bgColor: AaspasColors.soft2,
+                                    // bgColor: AaspasColors.soft2,
                                     spacing: 10,
                                     showIcon: false,
                                     iconSize: 15,
