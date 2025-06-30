@@ -1,6 +1,6 @@
 class ShopDetailsModel {
   bool? success;
-  List<Items>? items;
+  List<ShopDetailsItems>? items;
   String? msg;
 
   ShopDetailsModel({this.success, this.items, this.msg});
@@ -8,9 +8,9 @@ class ShopDetailsModel {
   ShopDetailsModel.fromJson(Map<String, dynamic> json) {
     success = json['success'];
     if (json['items'] != null) {
-      items = <Items>[];
+      items = <ShopDetailsItems>[];
       json['items'].forEach((v) {
-        items!.add(new Items.fromJson(v));
+        items!.add(new ShopDetailsItems.fromJson(v));
       });
     }
     msg = json['msg'];
@@ -27,7 +27,7 @@ class ShopDetailsModel {
   }
 }
 
-class Items {
+class ShopDetailsItems {
   String? sId;
   String? shopName;
   List<String>? shopType;
@@ -59,7 +59,7 @@ class Items {
   double? distance;
   double? distanceKm;
 
-  Items({
+  ShopDetailsItems({
     this.sId,
     this.shopName,
     this.shopType,
@@ -92,7 +92,7 @@ class Items {
     this.distanceKm,
   });
 
-  Items.fromJson(Map<String, dynamic> json) {
+  ShopDetailsItems.fromJson(Map<String, dynamic> json) {
     sId = json['_id'];
     shopName = json['shopName'];
     shopType = json['shopType'].cast<String>();

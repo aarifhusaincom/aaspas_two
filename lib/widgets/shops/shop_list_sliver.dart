@@ -154,6 +154,7 @@ class _ShopListSliverState extends State<ShopListSliver> {
                   shopAddress: "${shopList[index].address}",
                   currentDistance:
                       "${shopList[index].distanceKm!.toStringAsFixed(2) ?? 0.00} KM",
+                  verified: shopList[index].verified!,
                 ),
               );
             } else {

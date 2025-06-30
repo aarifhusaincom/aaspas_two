@@ -136,10 +136,12 @@ class _ShopListNonSliverState extends State<ShopListNonSliver> {
             image: shopList[index].shopImage ?? AaspasWizard.shopAltImage,
             shopName: "${shopList[index].shopName}",
             shopAddress: "${shopList[index].address}",
+
             currentDistance:
                 "${shopList[index].distanceKm!.toStringAsFixed(2) ?? 0.00} KM",
             locLat: shopList[index].location!.coordinates![1].toString(),
             locLong: shopList[index].location!.coordinates![0].toString(),
+            verified: shopList[index].verified!,
           );
         } else {
           return Center(

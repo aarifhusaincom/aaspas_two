@@ -171,6 +171,7 @@ class _ShopListSliverNearbyState extends State<ShopListSliverNearby> {
                 shopAddress: "${shopList[index].address}",
                 currentDistance:
                     "${shopList[index].distanceKm!.toStringAsFixed(2) ?? 0.00} KM",
+                verified: shopList[index].verified!,
               );
             } else {
               if (isLastPage) {

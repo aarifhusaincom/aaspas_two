@@ -51,6 +51,7 @@ class AaspasImages {
 }
 
 class AaspasIcons {
+  static String verifiedWhite = "assets/icons/verified_white.svg";
   static String verified = "assets/icons/verified.svg";
   static String viewWhite = "assets/icons/view_white.svg";
   static String direction = "assets/icons/direction.svg";

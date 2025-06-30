@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../constant_and_api/aaspas_constant.dart';
+import '../../model/shop_cats_items_model.dart';
 import '../../model/shop_details_model.dart';
 import '../../widgets/app_and_search_bar/appbar_only_back.dart';
 import '../../../widgets/buttons/custom_button.dart';
@@ -62,12 +63,12 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
 
     try {
       // Clear old data *before* fetching new data
-      _clearShopData();
+      // _clearShopData();
 
       // Fetch both sets of data. Consider using Future.wait if they can run in parallel
       // and don't depend on each other for initial request parameters.
       await fetchShopDetailsById(); // This will update its own part of the state and call setState
-      await getShopsCatItems(); // This will update its own part of the state and call setState
+      await getShopCatsItems(); // This will update its own part of the state and call setState
 
       // After all data is fetched and individual setStates have run,
       // update the main loading flag for the page.
@@ -93,24 +94,6 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
     }
   }
 
-  void _clearShopData() {
-    // shopDetails.clear(); // If it's List<Items>
-    // shopDetails = []; // More direct for reassignment
-
-    // newImageLinks = [];
-    // workingDays = [];
-    // featuredCategories = [];
-    //
-    // noDataFound = false; // Reset no data found flag for the main shop details
-    //
-    // // Clear data for categories and items
-    // featuredCategoryDetails = [];
-    // othersCategories = [];
-    // featuredItems = [];
-    // otherItems = [];
-    // noDataFoundForCatsItems = false; // Reset this flag too
-  }
-
   //------for same page refresh----- ends //
 
   ///////////////////////////////////////////////////////////
@@ -118,120 +101,6 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
   bool noDataFound = false;
   bool isShopOpenNow = false;
   bool dataLoaded = false;
-  //////////////////////////////////////////////////
-
-  List featuredCategoryDetails = [];
-  List othersCategories = [];
-  List featuredItems = [];
-  List otherItems = [];
-  Future<void> getShopsCatItems() async {
-    print("///////////////// getShopsCatItems() for $currentShopId");
-    final String paramString = '?id=$currentShopId';
-    final url =
-        '${AaspasWizard.baseUrl}${AaspasWizard.getShopsCatItems}$paramString';
-    final response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-
-      final newFeaturedItems = jsonData['items'][0]['featuredItems'] ?? [];
-      final newOtherItems = jsonData['items'][0]['otherItems'] ?? [];
-      final newFeaturedCategoryDetails =
-          jsonData['category'][0]['featuredCategoryDetails'] ?? [];
-      final newOthersCategories =
-          jsonData['category'][0]['otherCategoryDetails'] ?? [];
-
-      setState(() {
-        // Call setState AFTER updating the variables
-        featuredItems = newFeaturedItems;
-        otherItems = newOtherItems;
-        featuredCategoryDetails = newFeaturedCategoryDetails;
-        othersCategories = newOthersCategories;
-        noDataFoundForCatsItems =
-            newFeaturedItems.isEmpty &&
-            newOtherItems.isEmpty &&
-            newFeaturedCategoryDetails.isEmpty &&
-            newOthersCategories.isEmpty;
-      });
-    } else {
-      print("Error fetching shop cats/items: ${response.statusCode}");
-      setState(() {
-        noDataFoundForCatsItems =
-            true; // Indicate error or no data for this part
-        featuredCategoryDetails = []; // Ensure lists are empty on error
-        othersCategories = [];
-        featuredItems = [];
-        otherItems = [];
-      });
-    }
-  }
-
-  //////////////////////////////////////////////////
-  // List<Items> shopDetails = [];
-
-  // List shopImages = [];
-  List newImageLinks = [];
-  // List workingDays = [];
-  List<dynamic> featuredCategories = [];
-
-  late dynamic firstShopItem;
-  Future<void> fetchShopDetailsById() async {
-    print("///////////////// fetchShopDetailsById() for $currentShopId");
-    // No need to clear here if _clearShopData() is called in loadNewShop
-
-    final String paramString =
-        '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&id=$currentShopId';
-    final url =
-        '${AaspasWizard.baseUrl}${AaspasWizard.getShopsDetailsById}$paramString';
-    final response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-      final model = ShopDetailsModel.fromJson(jsonData);
-      final newShopDetailItems = model.items ?? []; // Renamed for clarity
-
-      if (newShopDetailItems.isNotEmpty) {
-        // Assign new data
-        // It's crucial that ShopDetailsModel.Items has all the fields you need
-        // or you manually parse them from jsonData as before.
-        // Assuming your ShopDetailsModel is comprehensive:
-        firstShopItem = newShopDetailItems.first;
-        // print("/// Shop Images List");
-        // print(firstShopItem.shopImages);
-        cacheImageUrls(firstShopItem.shopImages);
-        setState(() {
-          // Update all state variables within ONE setState for this fetch
-          // shopDetails = newShopDetailItems; // Replace, don't add
-
-          featuredCategories =
-              firstShopItem.featuredCategories ??
-              []; // This is from shop details, distinct from getShopsCatItems()
-
-          // shopImages = firstShopItem.shopImages ?? [];
-          if (firstShopItem.shopImages.isNotEmpty) {
-            newImageLinks = List<dynamic>.from(
-              firstShopItem.shopImages,
-            ); // Create a new list
-          } else {
-            newImageLinks = [];
-          }
-          noDataFound = false; // Data was found
-        });
-      } else {
-        setState(() {
-          // Handle no data found for this specific shop ID
-          _clearShopData(); // Clear everything if the new shop ID returns no data
-          noDataFound = true;
-        });
-      }
-    } else {
-      print("Error fetching shop details: ${response.statusCode}");
-      setState(() {
-        _clearShopData(); // Clear everything on error
-        noDataFound = true; // Indicate error or no data
-      });
-    }
-  }
 
   // Ensure initState and didChangeDependencies also manage dataLoaded correctly
   @override
@@ -264,7 +133,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
           // Initial load sequence
           setState(() {
             dataLoaded = false; // Show loading indicator
-            _clearShopData(); // Clear any potential stale data
+            // _clearShopData(); // Clear any potential stale data
           });
           _fetchInitialData();
         } else if (initialSid == null) {
@@ -283,11 +152,126 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
       }
     }
   }
+  //////////////////////////////////////////////////
+
+  /// //////////// getShopCatsItems Start //////////////
+  ShopItems items = ShopItems();
+  ShopCategories categories = ShopCategories();
+  Future<void> getShopCatsItems() async {
+    print("///////////////// getShopsCatItems() for $currentShopId");
+    final String paramString = '?id=$currentShopId';
+    final url =
+        '${AaspasWizard.baseUrl}${AaspasWizard.getShopsCatItems}$paramString';
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+
+      items = ShopItems.fromJson(jsonData["items"][0]);
+      categories = ShopCategories.fromJson(jsonData["category"][0]);
+
+      // print("1st name of item and cats");
+      // print(items.featuredItems?[0].itemName);
+      // print(items.otherItems?[0].itemName);
+      // print(categories.featuredCategoryDetails?[0].categoryName);
+      // print(categories.otherCategoryDetails?[0].categoryName);
+
+      setState(() {
+        // Call setState AFTER updating the variables
+
+        noDataFoundForCatsItems =
+            items.featuredItems!.isEmpty &&
+            items.otherItems!.isEmpty &&
+            categories.featuredCategoryDetails!.isEmpty &&
+            categories.otherCategoryDetails!.isEmpty;
+      });
+    } else {
+      print("Error fetching shop cats/items: ${response.statusCode}");
+      setState(() {
+        noDataFoundForCatsItems =
+            true; // Indicate error or no data for this part
+      });
+    }
+  }
+
+  /// //////////// getShopCatsItems End //////////////
+
+  /////////
+
+  /// //////////// fetchShopDetailsById Starts //////////////
+  List newImageLinks = [];
+  List<String?> featuredCategories = [];
+  ShopDetailsItems firstShopItem = ShopDetailsItems();
+  Future<void> fetchShopDetailsById() async {
+    print("///////////////// fetchShopDetailsById() for $currentShopId");
+    // No need to clear here if _clearShopData() is called in loadNewShop
+
+    final String paramString =
+        '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&id=$currentShopId';
+    final url =
+        '${AaspasWizard.baseUrl}${AaspasWizard.getShopsDetailsById}$paramString';
+    print("shopDetails Url");
+    print(url);
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      firstShopItem = ShopDetailsItems.fromJson(jsonData["items"][0]);
+      print('Shop DetailsNEw shopName');
+      print(firstShopItem.shopName);
+
+      if (jsonData["items"][0].isNotEmpty) {
+        // Assign new data
+        // It's crucial that ShopDetailsModel.Items has all the fields you need
+        // or you manually parse them from jsonData as before.
+        // Assuming your ShopDetailsModel is comprehensive:
+
+        // print("/// Shop Images List");
+        // print(firstShopItem.shopImages);
+        if (firstShopItem.shopImages != null) {
+          cacheImageUrls(firstShopItem.shopImages!);
+        }
+        setState(() {
+          // Update all state variables within ONE setState for this fetch
+          // shopDetails = newShopDetailItems; // Replace, don't add
+
+          featuredCategories =
+              firstShopItem.featuredCategories ??
+              []; // This is from shop details, distinct from getShopsCatItems()
+
+          // shopImages = firstShopItem.shopImages ?? [];
+          if (firstShopItem.shopImages!.isNotEmpty) {
+            newImageLinks = List<dynamic>.from(
+              firstShopItem.shopImages!,
+            ); // Create a new list
+          } else {
+            newImageLinks = [];
+          }
+          noDataFound = false; // Data was found
+        });
+      } else {
+        setState(() {
+          // Handle no data found for this specific shop ID
+          // _clearShopData(); // Clear everything if the new shop ID returns no data
+          noDataFound = true;
+        });
+      }
+    } else {
+      print("Error fetching shop details: ${response.statusCode}");
+      setState(() {
+        // _clearShopData(); // Clear everything on error
+        noDataFound = true; // Indicate error or no data
+      });
+    }
+  }
+
+  /// //////////// fetchShopDetailsById Ends //////////////
 
   Future<void> _fetchInitialData() async {
     try {
       await fetchShopDetailsById();
-      await getShopsCatItems();
+      print("firstShopItem.shopName inside _fetchInitialData()");
+      print(firstShopItem.shopName);
+      await getShopCatsItems();
       isShopOpenNow = isShopOpen(
         openTimeStr: firstShopItem.openTime ?? "",
         closeTimeStr: firstShopItem.closeTime ?? "",
@@ -314,7 +298,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
   }
 
   bool isShopOpen({required String openTimeStr, required String closeTimeStr}) {
-    if (isTodayOff(firstShopItem.workingDays)) {
+    if (isTodayOff(firstShopItem.workingDays!)) {
       return false;
     }
     // print("///////////////////////////////////// isShopOpen called");
@@ -449,8 +433,6 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
   /// cache shopImages Ends
   @override
   Widget build(BuildContext context) {
-    // print("isTodayAfterfirstShopItem.offerExpiryDate");
-    // print(isTodayAfter(firstShopItem.offerExpiryDate));
     final orientation = MediaQuery.of(context).orientation;
     final currentSize = MediaQuery.of(context).size;
     final bool isMobile = currentSize.width < 600;
@@ -481,23 +463,6 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                     spacing: 10,
                     runSpacing: 20,
                     children: [
-                      // Container(
-                      //   constraints: BoxConstraints(
-                      //     maxWidth:
-                      //         orientation == Orientation.portrait
-                      //             ? (currentSize.width - 35)
-                      //             : 300,
-                      //     maxHeight:
-                      //         orientation == Orientation.portrait
-                      //             ? (currentSize.width - 35)
-                      //             : 300,
-                      //   ),
-                      //   clipBehavior: Clip.hardEdge,
-                      //   decoration: BoxDecoration(
-                      //     color: Colors.purple,
-                      //     borderRadius: BorderRadius.circular(16),
-                      //   ),
-                      // ),
                       Container(
                         constraints: BoxConstraints(
                           maxWidth:
@@ -523,7 +488,9 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                     Navigator.pushNamed(
                                       context,
                                       '/single_video_player',
-                                      arguments: {'video': firstShopItem.video},
+                                      arguments: {
+                                        'video': firstShopItem.video ?? "",
+                                      },
                                     );
                                   },
                                   child: Stack(
@@ -562,7 +529,9 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                             if (isMobile &&
                                 firstShopItem.offer != '' &&
                                 firstShopItem.offer != null &&
-                                isTodayAfter(firstShopItem.offerExpiryDate))
+                                isTodayAfter(
+                                  firstShopItem.offerExpiryDate ?? "",
+                                ))
                               Container(
                                 padding: EdgeInsets.symmetric(
                                   horizontal: 10,
@@ -617,7 +586,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                                     BorderRadius.circular(4),
                                               ),
                                               child: Text(
-                                                "Offer expire on ${formatDateTo_ddMMyyyy(firstShopItem.offerExpiryDate)}" ??
+                                                "Offer expire on ${formatDateTo_ddMMyyyy(firstShopItem.offerExpiryDate ?? "")}" ??
                                                     'Expired',
                                                 style: TextStyle(
                                                   fontSize: 13,
@@ -644,7 +613,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      firstShopItem.shopName,
+                                      firstShopItem.shopName ?? "",
                                       maxLines: 2,
                                       softWrap: true,
                                       overflow: TextOverflow.ellipsis,
@@ -664,7 +633,9 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                         maxWidth: 120,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: AaspasColors.soft2,
+                                        color:
+                                            AaspasColors
+                                                .white, //AaspasColors.soft2
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       title: "Verified",
@@ -714,7 +685,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                       color: AaspasColors.soft2,
                                       borderRadius: BorderRadius.circular(4),
                                     ),
-                                    title: firstShopItem.area!,
+                                    title: firstShopItem.area ?? "",
                                     fontSize: 15,
                                     horizontalPadding: 10,
                                     color: AaspasColors.black,
@@ -778,9 +749,8 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                       spacing: 4,
                                       runSpacing: 6,
                                       children: [
-                                        if (firstShopItem.shopType?.contains(
-                                          'Retail',
-                                        ))
+                                        if ((firstShopItem.shopType ?? [])
+                                            .contains('Retail'))
                                           SizedBox(
                                             width: 65,
                                             child: LabelCard(
@@ -789,7 +759,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                                 borderRadius:
                                                     BorderRadius.circular(4),
                                               ),
-                                              // TODO: Add Shop Type
+
                                               title: "Retail",
                                               fontSize: 14,
                                               horizontalPadding: 10,
@@ -802,9 +772,8 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                               widthLabel: 100,
                                             ),
                                           ),
-                                        if (firstShopItem.shopType?.contains(
-                                          'Service',
-                                        ))
+                                        if ((firstShopItem.shopType ?? [])
+                                            .contains('Service'))
                                           SizedBox(
                                             width: 75,
                                             child: LabelCard(
@@ -824,9 +793,8 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                               fontWeight: FontWeight.w700,
                                             ),
                                           ),
-                                        if (firstShopItem.shopType?.contains(
-                                          'Wholesale',
-                                        ))
+                                        if ((firstShopItem.shopType ?? [])
+                                            .contains('Wholesale'))
                                           SizedBox(
                                             width: 100,
                                             child: LabelCard(
@@ -863,7 +831,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                         // (shopDetails[0].distance != null)
                                         //     ? "Direction ${shopDetails[0].distance!.toStringAsFixed(2)} KM"
                                         //     : "Direction NA",
-                                        "Direction ${firstShopItem.distanceKm!.toStringAsFixed(2)} KM",
+                                        "Direction ${firstShopItem.distanceKm?.toStringAsFixed(2) ?? 0} KM",
                                     fontSize: 13,
                                     horizontalPadding: 10,
                                     color: AaspasColors.black,
@@ -956,37 +924,51 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                           children: [
                                             WeekDayLetter(
                                               weekLetter: "M",
-                                              status: firstShopItem.workingDays
+                                              status: (firstShopItem
+                                                          .workingDays ??
+                                                      [])
                                                   .contains('Monday'),
                                             ),
                                             WeekDayLetter(
                                               weekLetter: "T",
-                                              status: firstShopItem.workingDays
+                                              status: (firstShopItem
+                                                          .workingDays ??
+                                                      [])
                                                   .contains('Tuesday'),
                                             ),
                                             WeekDayLetter(
                                               weekLetter: "W",
-                                              status: firstShopItem.workingDays
+                                              status: (firstShopItem
+                                                          .workingDays ??
+                                                      [])
                                                   .contains('Wednesday'),
                                             ),
                                             WeekDayLetter(
                                               weekLetter: "T",
-                                              status: firstShopItem.workingDays
+                                              status: (firstShopItem
+                                                          .workingDays ??
+                                                      [])
                                                   .contains('Thursday'),
                                             ),
                                             WeekDayLetter(
                                               weekLetter: "F",
-                                              status: firstShopItem.workingDays
+                                              status: (firstShopItem
+                                                          .workingDays ??
+                                                      [])
                                                   .contains('Friday'),
                                             ),
                                             WeekDayLetter(
                                               weekLetter: "S",
-                                              status: firstShopItem.workingDays
+                                              status: (firstShopItem
+                                                          .workingDays ??
+                                                      [])
                                                   .contains('Saturday'),
                                             ),
                                             WeekDayLetter(
                                               weekLetter: "S",
-                                              status: firstShopItem.workingDays
+                                              status: (firstShopItem
+                                                          .workingDays ??
+                                                      [])
                                                   .contains('Sunday'),
                                             ),
                                           ],
@@ -1073,7 +1055,10 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                     spacing: 10,
                     children: [
                       /// Offer Card for tablet
-                      if (isTablet)
+                      if (isTablet &&
+                          firstShopItem.offer != '' &&
+                          firstShopItem.offer != null &&
+                          isTodayAfter(firstShopItem.offerExpiryDate ?? ""))
                         Container(
                           padding: EdgeInsets.symmetric(
                             horizontal: 10,
@@ -1170,7 +1155,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                         spacing: 16,
                         children: [
                           // All items/services of $shopName
-                          if (featuredItems.isNotEmpty &&
+                          if ((noDataFoundForCatsItems == false) &&
                               firstShopItem.showItemType == 1)
                             Container(
                               alignment: Alignment.centerLeft,
@@ -1191,12 +1176,12 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                               ),
                             ),
                           // Items chips
-                          if (featuredItems.isNotEmpty &&
+                          if ((items.featuredItems ?? []).isNotEmpty &&
                               firstShopItem.showItemType == 1)
                             SizedBox(
                               width: double.infinity,
                               child:
-                                  featuredItems.isEmpty
+                                  (items.featuredItems ?? []).isEmpty
                                       ? Center(
                                         child: CircularProgressIndicator(),
                                       )
@@ -1208,10 +1193,12 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                             WrapCrossAlignment.center,
                                         runSpacing: 8, // vertical spacing
                                         children: List.generate(
-                                          (featuredItems.length +
-                                              otherItems.length),
+                                          ((items.featuredItems ?? []).length +
+                                              (items.otherItems ?? []).length),
                                           (index) {
-                                            if (index < featuredItems.length) {
+                                            if (index <
+                                                (items.featuredItems ?? [])
+                                                    .length) {
                                               return InkWell(
                                                 onTap: () {
                                                   Navigator.pushNamed(
@@ -1219,9 +1206,13 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                                     '/cat_item_wise',
                                                     arguments: {
                                                       'id':
-                                                          featuredItems[index]['_id'],
+                                                          items
+                                                              .featuredItems?[index]
+                                                              .sId,
                                                       'name':
-                                                          featuredItems[index]['item_name'],
+                                                          items
+                                                              .featuredItems?[index]
+                                                              .itemName,
                                                       'categoryType': 'shops',
                                                       'cardType': 'item',
                                                     },
@@ -1241,13 +1232,17 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                                           ? 110
                                                           : 110,
                                                   itemName:
-                                                      featuredItems[index]['item_name'] ??
+                                                      items
+                                                          .featuredItems?[index]
+                                                          .itemName ??
                                                       '',
                                                 ),
                                               );
                                             } else {
                                               final adjustedIndex =
-                                                  index - featuredItems.length;
+                                                  index -
+                                                  (items.featuredItems ?? [])
+                                                      .length;
                                               return InkWell(
                                                 onTap: () {
                                                   Navigator.pushNamed(
@@ -1255,9 +1250,13 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                                     '/cat_item_wise',
                                                     arguments: {
                                                       'id':
-                                                          otherItems[adjustedIndex]['_id'],
+                                                          items
+                                                              .otherItems?[adjustedIndex]
+                                                              .sId,
                                                       'name':
-                                                          otherItems[adjustedIndex]['item_name'],
+                                                          items
+                                                              .otherItems?[adjustedIndex]
+                                                              .itemName,
                                                       'categoryType': 'shops',
                                                       'cardType': 'item',
                                                     },
@@ -1278,7 +1277,9 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                                           ? 110
                                                           : 110,
                                                   itemName:
-                                                      otherItems[adjustedIndex]['item_name'] ??
+                                                      items
+                                                          .otherItems?[adjustedIndex]
+                                                          .itemName ??
                                                       '',
                                                 ),
                                               );
@@ -1288,12 +1289,14 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                       ),
                             ),
                           //Category Chips
-                          if (featuredItems.isNotEmpty &&
+                          if ((categories.featuredCategoryDetails ?? [])
+                                  .isNotEmpty &&
                               firstShopItem.showItemType == 1)
                             SizedBox(
                               width: double.infinity,
                               child:
-                                  featuredItems.isEmpty
+                                  (categories.featuredCategoryDetails ?? [])
+                                          .isEmpty
                                       ? Center(
                                         child: CircularProgressIndicator(),
                                       )
@@ -1305,11 +1308,16 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                             WrapCrossAlignment.center,
                                         runSpacing: 8, // vertical spacing
                                         children: List.generate(
-                                          (featuredCategoryDetails.length +
-                                              othersCategories.length),
+                                          ((categories.featuredCategoryDetails ??
+                                                      [])
+                                                  .length +
+                                              (categories.otherCategoryDetails ??
+                                                      [])
+                                                  .length),
                                           (index) {
                                             if (index <
-                                                featuredCategoryDetails
+                                                (categories.featuredCategoryDetails ??
+                                                        [])
                                                     .length) {
                                               return InkWell(
                                                 onTap: () {
@@ -1318,11 +1326,17 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                                     '/cat_item_wise',
                                                     arguments: {
                                                       'id':
-                                                          featuredCategoryDetails[index]['_id'],
+                                                          categories
+                                                              .featuredCategoryDetails?[index]
+                                                              .sId,
                                                       'name':
-                                                          featuredCategoryDetails[index]['category_name'],
+                                                          categories
+                                                              .featuredCategoryDetails?[index]
+                                                              .categoryName,
                                                       "imageUrl":
-                                                          featuredCategoryDetails[index]['category_image'],
+                                                          categories
+                                                              .featuredCategoryDetails?[index]
+                                                              .categoryImage,
                                                       'categoryType': 'shops',
                                                       'cardType': 'category',
                                                     },
@@ -1331,24 +1345,33 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
 
                                                 child: CategoryChip(
                                                   catName:
-                                                      featuredCategoryDetails[index]['category_name'] ??
+                                                      categories
+                                                          .featuredCategoryDetails?[index]
+                                                          .categoryName ??
                                                       '',
                                                   imageUrl:
-                                                      (featuredCategoryDetails[index]['category_image'] ==
+                                                      (categories
+                                                                  .featuredCategoryDetails?[index]
+                                                                  .categoryImage ==
                                                               '')
                                                           ? AaspasWizard
                                                               .shopAltImage
-                                                          : (featuredCategoryDetails[index]['category_image'] ==
+                                                          : (categories
+                                                                  .featuredCategoryDetails?[index]
+                                                                  .categoryImage ==
                                                               null)
                                                           ? AaspasWizard
                                                               .shopAltImage
-                                                          : featuredCategoryDetails[index]['category_image'],
+                                                          : categories
+                                                              .featuredCategoryDetails?[index]
+                                                              .categoryImage,
                                                 ),
                                               );
                                             } else {
                                               final adjustedIndex =
                                                   index -
-                                                  featuredCategoryDetails
+                                                  (categories.featuredCategoryDetails ??
+                                                          [])
                                                       .length;
                                               return InkWell(
                                                 onTap: () {
@@ -1357,11 +1380,17 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                                     '/cat_item_wise',
                                                     arguments: {
                                                       'id':
-                                                          othersCategories[adjustedIndex]['_id'],
+                                                          categories
+                                                              .otherCategoryDetails?[adjustedIndex]
+                                                              .sId,
                                                       'name':
-                                                          othersCategories[adjustedIndex]['category_name'],
+                                                          categories
+                                                              .otherCategoryDetails?[adjustedIndex]
+                                                              .categoryName,
                                                       "imageUrl":
-                                                          othersCategories[adjustedIndex]['category_image'],
+                                                          categories
+                                                              .otherCategoryDetails?[adjustedIndex]
+                                                              .categoryImage,
                                                       'categoryType': 'shops',
                                                       'cardType': 'category',
                                                     },
@@ -1369,10 +1398,14 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                                 },
                                                 child: CategoryChip(
                                                   catName:
-                                                      othersCategories[adjustedIndex]['category_name'] ??
+                                                      categories
+                                                          .otherCategoryDetails?[adjustedIndex]
+                                                          .categoryName ??
                                                       '',
                                                   imageUrl:
-                                                      othersCategories[adjustedIndex]['category_image'] ??
+                                                      categories
+                                                          .otherCategoryDetails?[adjustedIndex]
+                                                          .categoryImage ??
                                                       AaspasWizard.shopAltImage,
                                                 ),
                                               );
@@ -1381,25 +1414,6 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                                         ),
                                       ),
                             ),
-                          // Heading Related Shop Near By
-                          // Container(
-                          //   alignment: Alignment.centerLeft,
-                          //   // color: Colors.purple,
-                          //   // height: 40,
-                          //   width: double.infinity,
-                          //   child: Text(
-                          //     "Related Shop Near By",
-                          //     maxLines: 1,
-                          //     overflow: TextOverflow.ellipsis,
-                          //     style: GoogleFonts.roboto(
-                          //       textStyle: TextStyle(
-                          //         fontSize: 17,
-                          //         fontWeight: FontWeight.w700,
-                          //         color: Colors.black,
-                          //       ),
-                          //     ),
-                          //   ),
-                          // ),
                         ],
                       ),
                     ],

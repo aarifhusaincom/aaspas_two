@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:aaspas/model/property_details_model.dart';
 import 'package:aaspas/widgets/image_slider/image_slider.dart';
 import 'package:aaspas/widgets/property/property_list_sliver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -59,33 +61,14 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   //------for same page refresh----- ends //
   bool dataLoaded = false;
 
-  String categoryId = "";
-  String itemId = "";
-  String title = "";
-  int actualPrice = 0;
-  String visualPrice = "";
-  String description = "";
-  int totalArea = 0;
-  int pinCode = 0;
-  String area = "";
-  String ownerName = "";
-  String phoneNo = "";
-  String brokerageType = "";
-  String city = "";
-  String video = "";
-  int securityDeposit = 0;
-  String? numberOfMonthsSecurity = "0";
-  int brokerageAmount = 0;
-  int maintenanceAmount = 0;
-  List facilityDetails = [];
-  List images = [];
   List<dynamic> newImageLinks = [];
   /////////////////////////////
   bool containsMap(List list) {
     return list.any((element) => element is Map);
   }
-  //////////////////////////////
 
+  //////////////////////////////
+  PropertyDetailsItems item = PropertyDetailsItems();
   Future<void> getPropertyByID() async {
     final String paramString = '?id=$currentPropertyId';
     final url =
@@ -94,29 +77,11 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
-
-      categoryId = "${jsonData['items'][0]['categoryId']}";
-      itemId = "${jsonData['items'][0]['itemId']}";
-      title = "${jsonData['items'][0]['title']}";
-      actualPrice = jsonData['items'][0]['actual_price'];
-      visualPrice = jsonData['items'][0]['visual_price'];
-      description = "${jsonData['items'][0]['description']}";
-      totalArea = jsonData['items'][0]['totalArea'];
-      pinCode = jsonData['items'][0]['pincode'];
-      area = "${jsonData['items'][0]['area']}";
-      ownerName = "${jsonData['items'][0]['ownerName']}";
-      phoneNo = "${jsonData['items'][0]['phoneNo']}";
-      brokerageType = "${jsonData['items'][0]['brokerageType']}";
-      city = "${jsonData['items'][0]['city']}";
-      video =
-          "${jsonData['items'][0]['video'] ?? 'https://github.com/aarifhusainwork/aaspas-storage-assets/raw/refs/heads/main/IndoreInstagram/Khajrana_reels/reels/4.mp4'}";
-      securityDeposit = jsonData['items'][0]['pincode'];
-      numberOfMonthsSecurity =
-          jsonData['items'][0]['no_of_months_security'] ?? "0";
-      brokerageAmount = jsonData['items'][0]['brokerageAmount'] ?? 0;
-      maintenanceAmount = jsonData['items'][0]['maintenance_amount'] ?? 0;
-      facilityDetails = jsonData['items'][0]['facilityDetails'];
-      images = jsonData['items'][0]['images'] ?? [];
+      item = PropertyDetailsItems.fromJson(jsonData["items"][0]);
+      if (item.images != null) {
+        cacheImageUrls(item.images!);
+      }
+      final images = item.images ?? [];
       if (images.isEmpty) {
         newImageLinks = [];
         setState(() {
@@ -168,14 +133,14 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   //   }
 
   String getShareText() {
-    return '''💸 *Price - ₹ ${_formatPrice(actualPrice)}*
-📐 *$totalArea sq Feet*
-( ₹ ${(actualPrice / totalArea).toStringAsFixed(0)} per sq Feet )
+    return '''💸 *Price - ₹ ${_formatPrice(item.actualPrice ?? 1)}*
+📐 *${item.totalArea} sq Feet*
+( ₹ ${(item.actualPrice! / item.totalArea!).toStringAsFixed(0)} per sq Feet )
 
-📍 $area - $city
-🏠 $description
-*👤 *$ownerName*
-*📞 *$phoneNo*
+📍 ${item.area!} - ${item.city}
+🏠 ${item.description ?? ""}
+*👤 *${item.ownerName}*
+*📞 *${item.phoneNo}*
         
 *Property Code - 123*''';
   }
@@ -232,6 +197,22 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     super.didChangeDependencies();
   }
 
+  /// cache shopImages Starts
+  Future<void> cacheImageUrls(List<String> urls) async {
+    final cacheManager = DefaultCacheManager();
+
+    for (final url in urls) {
+      try {
+        // Download and cache the file
+        await cacheManager.downloadFile(url);
+      } catch (e) {
+        print("Error caching $url: $e");
+      }
+    }
+  }
+
+  /// cache shopImages Ends
+
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
@@ -273,7 +254,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                       alignment: Alignment.center,
                       children: [
                         ImageSlider(imageLinks: newImageLinks),
-                        if (video != '')
+                        if (item.videoUrl != '' && item.videoUrl != null)
                           Positioned(
                             bottom: 0,
                             right: 0,
@@ -282,7 +263,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                 Navigator.pushNamed(
                                   context,
                                   '/single_video_players',
-                                  arguments: {'video': video},
+                                  arguments: {'video': item.videoUrl},
                                 );
                               },
                               child: Stack(
@@ -329,7 +310,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                               Flexible(
                                 child: Text(
                                   // "1 BHK House 2 manjil 1 BHK House 2 manjil",
-                                  title,
+                                  item.title ?? "",
                                   maxLines: 2,
                                   softWrap: true,
                                   overflow: TextOverflow.ellipsis,
@@ -354,18 +335,6 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(
-                                // "1200 sq Feet",
-                                "$totalArea sq Feet",
-                                style: GoogleFonts.roboto(
-                                  textStyle: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: AaspasColors.black,
-                                  ),
-                                ),
-                              ),
-
                               Row(
                                 mainAxisSize: MainAxisSize.max,
                                 spacing: 14,
@@ -373,26 +342,10 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   // 6000 /ft2
-                                  LabelCard(
-                                    decoration: BoxDecoration(
-                                      color: AaspasColors.soft2,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    title:
-                                        "₹ ${(actualPrice / totalArea).toStringAsFixed(0)} /sqft",
-                                    fontSize: 14,
-                                    horizontalPadding: 10,
-                                    color: AaspasColors.primary,
-                                    // bgColor: AaspasColors.soft2,
-                                    // spacing: 10,
-                                    showIcon: false,
-                                    // iconPath: AaspasIcons.shareShop,
-                                    // iconSize: 25,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+
                                   // Price
                                   Text(
-                                    "₹ ${_formatPrice(actualPrice)}",
+                                    "₹ ${_formatPrice(item.actualPrice ?? 1)}",
                                     style: GoogleFonts.roboto(
                                       textStyle: TextStyle(
                                         fontSize: 22,
@@ -401,7 +354,38 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                       ),
                                     ),
                                   ),
+                                  //conditional price/sqft
+                                  if (item.categoryId !=
+                                      "67a10bc020db3d33ffa8928e")
+                                    LabelCard(
+                                      decoration: BoxDecoration(
+                                        color: AaspasColors.soft2,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      title:
+                                          "₹ ${(item.actualPrice! / item.totalArea!).toStringAsFixed(0)} /sqft",
+                                      fontSize: 14,
+                                      horizontalPadding: 10,
+                                      color: AaspasColors.primary,
+                                      // bgColor: AaspasColors.soft2,
+                                      // spacing: 10,
+                                      showIcon: false,
+                                      // iconPath: AaspasIcons.shareShop,
+                                      // iconSize: 25,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                 ],
+                              ),
+                              Text(
+                                // "1200 sq Feet",
+                                "${item.totalArea} sq Feet",
+                                style: GoogleFonts.roboto(
+                                  textStyle: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: AaspasColors.black,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -436,7 +420,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                   color: AaspasColors.soft2,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
-                                title: area,
+                                title: item.area!,
                                 fontSize: 15,
                                 horizontalPadding: 10,
                                 color: AaspasColors.black,
@@ -508,7 +492,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                         SizedBox(
                           width: double.infinity,
                           child: Text(
-                            description,
+                            item.description ?? "",
                             maxLines: 5,
                             softWrap: true,
                             textAlign: TextAlign.left,
@@ -534,7 +518,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                   // print("Call Clicked");
                                   final Uri dialUri = Uri(
                                     scheme: 'tel',
-                                    path: phoneNo,
+                                    path: item.phoneNo!.toString(),
                                   );
                                   if (await canLaunchUrl(dialUri)) {
                                     await launchUrl(dialUri);
@@ -561,7 +545,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                 onPressed: () async {
                                   // print("WhatsApp Clicked");
                                   var url =
-                                      'https://api.whatsapp.com/send?phone=917742121202&text=${Uri.encodeComponent(description)}%0A%0A_*${Uri.encodeComponent(AaspasWizard.propertyChatSuffix)}*_';
+                                      'https://api.whatsapp.com/send?phone=91${item.phoneNo}&text=${Uri.encodeComponent(item.description ?? "")}%0A%0A_*${Uri.encodeComponent(AaspasWizard.propertyChatSuffix)}*_';
                                   // launch(url);
                                   if (await canLaunch(url)) {
                                     await launch(url);
@@ -634,7 +618,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
           ),
           PropertyListSliver(
             propertyId: currentPropertyId,
-            propertyCategoryId: categoryId,
+            propertyCategoryId: item.categoryId,
             onTapPropertyCard: loadNewProperty,
           ),
         ],

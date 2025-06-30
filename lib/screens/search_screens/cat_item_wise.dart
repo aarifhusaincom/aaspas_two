@@ -119,7 +119,7 @@ class _CatItemWiseState extends State<CatItemWise> {
             width: double.infinity,
             alignment: Alignment.centerLeft,
             child: Text(
-              "Related ${(cardType == "category") ? categoryType : name} Nearby",
+              "Related ${(cardType == "category") ? categoryType : name} nearby",
               softWrap: true,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

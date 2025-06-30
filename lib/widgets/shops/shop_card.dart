@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../constant_and_api/aaspas_constant.dart';
 
@@ -10,6 +11,7 @@ class ShopCard extends StatelessWidget {
     required this.image,
     required this.shopName,
     required this.shopAddress,
+    required this.verified,
     required this.currentDistance,
     required this.edgeInsets,
     required this.locLat,
@@ -23,6 +25,7 @@ class ShopCard extends StatelessWidget {
   final String locLong;
   final String shopName;
   final String shopAddress;
+  final int verified;
   final String currentDistance;
   final EdgeInsets edgeInsets;
   final VoidCallback? onTap;
@@ -71,37 +74,57 @@ class ShopCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   color: Colors.grey,
                 ),
-                // Image.network(
-                //   // width: 80,
-                //   // height: 80,
-                //   fit: BoxFit.cover,
-                //   "${shopsList[index]["bigImageUrl"]}",
-                //   errorBuilder: (context, error, stackTrace) {
-                //     return Image.asset(
-                //       fit: BoxFit.cover,
-                //       'assets/images/shopPlaceholder.png',
-                //     ); // fallback image
-                //   },
-                // ),
-                // uncomment this if you want to use cached network image
-                child: CachedNetworkImage(
-                  imageUrl:
-                      (image == null || image == "")
-                          ? AaspasWizard.shopAltImage
-                          : image,
-                  // image ?? AaspasWizard.shopAltImage,
-                  fit: BoxFit.cover,
-                  // progressIndicatorBuilder:
-                  //     (context, url, downloadProgress) =>
-                  //         CircularProgressIndicator(
-                  //           color: Colors.purple,
-                  //           value: downloadProgress.progress,
-                  //         ),
-                  errorWidget:
-                      (context, url, error) => Image.asset(
-                        fit: BoxFit.cover,
-                        AaspasImages.shopPlaceholder,
+                child: Stack(
+                  children: [
+                    CachedNetworkImage(
+                      imageUrl:
+                          (image == null || image == "")
+                              ? AaspasWizard.shopAltImage
+                              : image,
+                      fit: BoxFit.cover,
+                      errorWidget:
+                          (context, url, error) => Image.asset(
+                            fit: BoxFit.cover,
+                            AaspasImages.shopPlaceholder,
+                          ),
+                    ),
+                    if (verified == 1)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            vertical: 2,
+                            horizontal: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AaspasColors.primary,
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(8),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            spacing: 2,
+                            children: [
+                              SvgPicture.asset(AaspasIcons.verifiedWhite),
+                              Text(
+                                "Verified",
+                                style: GoogleFonts.roboto(
+                                  textStyle: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                    color: AaspasColors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
+                  ],
                 ),
               ),
               Flexible(

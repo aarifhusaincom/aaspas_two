@@ -82,7 +82,9 @@ class PropertyCard extends StatelessWidget {
                 color: Colors.grey,
               ),
 
-              child:
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
                   image != "" && image != 'assets/images/shopPlaceholder.png'
                       ? CachedNetworkImage(
                         imageUrl: image,
@@ -108,6 +110,35 @@ class PropertyCard extends StatelessWidget {
                               AaspasImages.shopPlaceholder,
                             ),
                       ),
+                  if (brokerageType == "Brokerage")
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 2,
+                          horizontal: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AaspasColors.red,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          "Brokerage",
+                          style: GoogleFonts.roboto(
+                            textStyle: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: AaspasColors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
             Flexible(
               child: Padding(
@@ -203,69 +234,103 @@ class PropertyCard extends StatelessWidget {
                       // color: Colors.deepOrange,
                       alignment: Alignment.centerLeft,
                       child: Row(
+                        // alignment: WrapAlignment.start,
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        // alignment: WrapAlignment.spaceBetween,
-                        spacing: double.minPositive,
+                        // spacing: double.minPositive,
                         children: [
-                          Flexible(
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 0),
-                              // color: Colors.lightGreen,
-                              // width: double.infinity,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                spacing: 10,
-                                children: [
-                                  LabelCard(
-                                    decoration: BoxDecoration(
-                                      color: AaspasColors.white,
-                                      borderRadius: BorderRadius.circular(4),
-                                      border: Border.all(
-                                        color: AaspasColors.grayBorder,
-                                      ),
-                                    ),
-                                    title: area,
-                                    // title: "Khajoori Bazar",
-                                    fontSize: 12,
-                                    horizontalPadding: 10,
-                                    verticalPadding: 4,
-                                    color: AaspasColors.black,
-                                    // bgColor: AaspasColors.soft2,
-                                    spacing: 10,
-                                    showIcon: false,
-                                    iconSize: 15,
-                                    fontWeight: FontWeight.w700,
+                          // ConstrainedBox(
+                          //   constraints: BoxConstraints(
+                          //     maxWidth: MediaQuery.of(context).size.width - 200,
+                          //   ),
+                          //   child: LabelCard(
+                          //     alignment: Alignment.centerLeft,
+                          //     // constraints: BoxConstraints(
+                          //     //   // maxWidth: widthParent,
+                          //     //   // minWidth: widthParent,
+                          //     // ),
+                          //     decoration: BoxDecoration(
+                          //       color: AaspasColors.grayBorder,
+                          //       borderRadius: BorderRadius.circular(4),
+                          //       // border: Border.all(
+                          //       //   color: AaspasColors.grayBorder,
+                          //       // ),
+                          //     ),
+                          //     title: "$area, $city" * 5,
+                          //     // title: "Khajoori Bazar",
+                          //     fontSize: 14,
+                          //     horizontalPadding: 0, //10
+                          //     verticalPadding: 4,
+                          //     color: AaspasColors.black,
+                          //     // bgColor: AaspasColors.soft2,
+                          //     spacing: 10,
+                          //     showIcon: false,
+                          //     iconSize: 15,
+                          //     fontWeight: FontWeight.w700,
+                          //   ),
+                          // ),
+                          Expanded(
+                            child: LayoutBuilder(
+                              builder: (ctx, constraints) {
+                                double parentWidth = constraints.maxWidth;
+                                print("parentWidth");
+                                print(parentWidth);
+                                return LabelCard(
+                                  alignment: Alignment.centerLeft,
+                                  constraints: BoxConstraints(
+                                    maxWidth: parentWidth - 20,
+                                    // minWidth: widthParent,
                                   ),
-                                  LabelCard(
-                                    decoration: BoxDecoration(
-                                      color: AaspasColors.white,
-                                      borderRadius: BorderRadius.circular(4),
-                                      border: Border.all(
-                                        color: AaspasColors.grayBorder,
-                                      ),
-                                    ),
-                                    title: brokerageType,
-                                    fontSize: 12,
-                                    horizontalPadding: 10,
-                                    verticalPadding: 4,
-                                    color:
-                                        brokerageType == "Brokerage"
-                                            ? AaspasColors.red
-                                            : AaspasColors.green,
-                                    // bgColor: AaspasColors.soft2,
-                                    spacing: 10,
-                                    showIcon: false,
-                                    iconSize: 15,
-                                    fontWeight: FontWeight.w700,
+                                  decoration: BoxDecoration(
+                                    color: AaspasColors.white,
+                                    borderRadius: BorderRadius.circular(4),
+                                    // border: Border.all(
+                                    //   color: AaspasColors.grayBorder,
+                                    // ),
                                   ),
-                                ],
-                              ),
+                                  title: "$area, $city" * 1,
+                                  // title: "Khajoori Bazar",
+                                  fontSize: 14,
+                                  horizontalPadding: 0, //10
+                                  verticalPadding: 4,
+                                  color: AaspasColors.black,
+                                  // bgColor: AaspasColors.soft2,
+                                  spacing: 10,
+                                  showIcon: false,
+                                  iconSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                );
+                              },
                             ),
                           ),
 
+                          /// Next
+
+                          // LabelCard(
+                          //   alignment: Alignment.centerLeft,
+                          //   constraints: BoxConstraints(
+                          //     maxWidth: 200,
+                          //     // minWidth: 100,
+                          //   ),
+                          //   decoration: BoxDecoration(
+                          //     color: AaspasColors.grayBorder,
+                          //     borderRadius: BorderRadius.circular(4),
+                          //     // border: Border.all(
+                          //     //   color: AaspasColors.grayBorder,
+                          //     // ),
+                          //   ),
+                          //   title: "$area, $city" * 5,
+                          //   // title: "Khajoori Bazar",
+                          //   fontSize: 14,
+                          //   horizontalPadding: 0, //10
+                          //   verticalPadding: 4,
+                          //   color: AaspasColors.black,
+                          //   // bgColor: AaspasColors.soft2,
+                          //   spacing: 10,
+                          //   showIcon: false,
+                          //   iconSize: 15,
+                          //   fontWeight: FontWeight.w700,
+                          // ),
                           CustomButton(
                             spacing: 3,
                             padding: EdgeInsets.symmetric(

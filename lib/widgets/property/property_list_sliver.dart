@@ -6,6 +6,8 @@ import 'package:aaspas/widgets/property/property_card.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../model/PropertyByCategoryModel.dart';
+
 class PropertyListSliver extends StatefulWidget {
   const PropertyListSliver({
     super.key,
@@ -36,7 +38,7 @@ class _PropertyListSliverState extends State<PropertyListSliver> {
   int maxListCount = 1000;
   final ScrollController _scrollController = ScrollController();
   //////////////////////////////////////////
-  var jsonData;
+
   @override
   void initState() {
     super.initState();
@@ -67,21 +69,15 @@ class _PropertyListSliverState extends State<PropertyListSliver> {
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
-      jsonData = json.decode(response.body);
-      final model = PropertyCardModel.fromJson(jsonData);
+      final jsonData = json.decode(response.body);
+      final model = PropertyByCategoryIdModel.fromJson(jsonData);
       final newItems = model.items ?? [];
-      final model2 = Items.fromJson(jsonData);
-      // final newItems2 = model2.images ?? [];
-      print("/////////////////////////////////////////////item 2");
-      // print(jsonData['items']);
-      // print(jsonData['items'][1]['images']);
 
       setState(() {
         if (newItems.isEmpty && propertyList.isEmpty) {
           noDataFound = true;
         } else {
           propertyList.addAll(newItems);
-          // print(propertyList);
           isLastPage = newItems.length < pageSize;
           currentPage++;
         }
@@ -145,14 +141,10 @@ class _PropertyListSliverState extends State<PropertyListSliver> {
                       //         ? "assets/images/shopPlaceholder.png"
                       //         : "${jsonData['items'][index]['images'][0]['url']}",
                       image:
-                          propertyList[index].images == null
-                              ? AaspasWizard.shopAltImage
-                              : propertyList[index].images!.isEmpty
-                              ? AaspasWizard.shopAltImage
-                              // : !propertyList[index].images![0] is String
-                              : true
-                              ? AaspasWizard.shopAltImage
-                              : propertyList[index].images![0],
+                          (propertyList[index].images != null &&
+                                  propertyList[index].images != "")
+                              ? propertyList[index].images!
+                              : AaspasWizard.shopAltImage,
                       // : AaspasWizard.shopAltImage,
                       area: "${propertyList[index].area}",
                       city: "${propertyList[index].city}",

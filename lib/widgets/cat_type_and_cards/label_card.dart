@@ -19,6 +19,7 @@ class LabelCard extends StatelessWidget {
     this.showIcon = false,
     this.fontWeight,
     this.widthLabel = double.infinity,
+    this.alignment,
     this.constraints,
     this.decoration = const BoxDecoration(
       color: AaspasColors.textHalfBlack,
@@ -43,6 +44,7 @@ class LabelCard extends StatelessWidget {
   // final Color bgColor;
   final BoxDecoration? decoration;
   final BoxConstraints? constraints;
+  final AlignmentGeometry? alignment;
 
   // Border
 
@@ -57,24 +59,59 @@ class LabelCard extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
+        alignment: alignment,
         padding: EdgeInsets.symmetric(
           horizontal: horizontalPadding,
           vertical: verticalPadding,
         ),
         constraints: constraints,
         decoration: decoration,
-        child: Row(
-          // mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (showIcon) ...[
-              SvgPicture.asset(iconPath, height: iconSize, width: iconSize),
-              SizedBox(width: spacing),
-              // 👈 this adds space between icon and text
-            ],
-            if (showIcon)
-              Flexible(
-                child: Text(
+        child:
+            showIcon
+                ? Row(
+                  // mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (showIcon) ...[
+                      SvgPicture.asset(
+                        iconPath,
+                        height: iconSize,
+                        width: iconSize,
+                      ),
+                      SizedBox(width: spacing),
+                      // 👈 this adds space between icon and text
+                    ],
+                    if (showIcon)
+                      Flexible(
+                        child: Text(
+                          title,
+                          softWrap: true,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.roboto(
+                            textStyle: TextStyle(color: color),
+                            fontSize: fontSize,
+                            fontWeight: fontWeight,
+                          ),
+                        ),
+                      ),
+                    // if (!showIcon)
+                    //   Text(
+                    //     title,
+                    //     softWrap: true,
+                    //     maxLines: 1,
+                    //     overflow: TextOverflow.ellipsis,
+                    //     textAlign: TextAlign.center,
+                    //     style: GoogleFonts.roboto(
+                    //       textStyle: TextStyle(color: color),
+                    //       fontSize: fontSize,
+                    //       fontWeight: fontWeight,
+                    //     ),
+                    //   ),
+                  ],
+                )
+                : Text(
                   title,
                   softWrap: true,
                   maxLines: 1,
@@ -86,22 +123,6 @@ class LabelCard extends StatelessWidget {
                     fontWeight: fontWeight,
                   ),
                 ),
-              ),
-            if (!showIcon)
-              Text(
-                title,
-                softWrap: true,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.roboto(
-                  textStyle: TextStyle(color: color),
-                  fontSize: fontSize,
-                  fontWeight: fontWeight,
-                ),
-              ),
-          ],
-        ),
       ),
     );
   }

@@ -22,7 +22,7 @@ class PropertyListNonSliver extends StatefulWidget {
 
 class _PropertyListNonSliverState extends State<PropertyListNonSliver> {
   late final String url;
-  late final dynamic jsonData;
+  // late final dynamic jsonData;
   List<Items> propertyList = [];
   int currentPage = 1;
   final int pageSize = 20;
@@ -60,7 +60,7 @@ class _PropertyListNonSliverState extends State<PropertyListNonSliver> {
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
-      jsonData = json.decode(response.body);
+      final jsonData = json.decode(response.body);
       final model = PropertyByCategoryIdModel.fromJson(jsonData);
       final newItems = model.items ?? [];
 
@@ -80,9 +80,7 @@ class _PropertyListNonSliverState extends State<PropertyListNonSliver> {
   @override
   Widget build(BuildContext context) {
     final currentSize = MediaQuery.of(context).size;
-    print("/////////////////// property list non sliver running");
-    print("/////////////////propertyList[0].images");
-    // print(propertyList[0].images!.isEmpty);
+    // print("/////////////////// property list non sliver running");
 
     if (noDataFound) {
       return Center(child: Text("No Data Found"));
@@ -112,12 +110,6 @@ class _PropertyListNonSliverState extends State<PropertyListNonSliver> {
               propertyTitle: '${propertyList[index].title}',
               totalArea: propertyList[index].totalArea!,
               visualPrice: '${propertyList[index].visualPrice}',
-              // image:
-              //     jsonData['items'][index]['images'].length == 0
-              //         ? "assets/images/shopPlaceholder.png"
-              //         : jsonData['items'].length == 0
-              //         ? "assets/images/shopPlaceholder.png"
-              //         : "${jsonData['items'][index]['images'][0]['url']}",
               image:
                   (propertyList[index].images != null &&
                           propertyList[index].images != "")
