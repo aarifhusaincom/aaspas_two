@@ -8,8 +8,19 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ShopCardOnReel extends StatelessWidget {
-  const ShopCardOnReel({super.key, this.totalViews = 0});
-  final int totalViews;
+  const ShopCardOnReel({
+    super.key,
+    required this.shopId,
+    required this.shopImage,
+    required this.shopName,
+    required this.address,
+    this.views = 0,
+  });
+  final String shopId;
+  final String shopImage;
+  final String shopName;
+  final String address;
+  final int views;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +39,7 @@ class ShopCardOnReel extends StatelessWidget {
       }
     }
 
-    final String convertedViews = formatView(totalViews);
+    final String convertedViews = formatView(views);
 
     return InkWell(
       child: ClipRRect(
@@ -62,7 +73,7 @@ class ShopCardOnReel extends StatelessWidget {
                     ),
                   ),
                   child: CachedNetworkImage(
-                    imageUrl: AaspasWizard.shopAltImage,
+                    imageUrl: shopImage,
                     fit: BoxFit.cover,
                     // progressIndicatorBuilder:
                     //     (context, url, downloadProgress) =>
@@ -89,7 +100,7 @@ class ShopCardOnReel extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              "Hotel Zakir-Vijay Nagar",
+                              shopName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.roboto(
@@ -101,7 +112,7 @@ class ShopCardOnReel extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              "Vijay Nagar",
+                              address,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.roboto(

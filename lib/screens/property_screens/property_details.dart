@@ -378,7 +378,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                               ),
                               Text(
                                 // "1200 sq Feet",
-                                "${item.totalArea} sq Feet",
+                                "Size ${item.totalArea} sqFt",
                                 style: GoogleFonts.roboto(
                                   textStyle: TextStyle(
                                     fontSize: 16,
@@ -386,6 +386,31 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                                     color: AaspasColors.black,
                                   ),
                                 ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 0),
+                          // color: Colors.white,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              LabelCard(
+                                decoration: BoxDecoration(
+                                  color: AaspasColors.soft2,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                title: item.itemName ?? "N/A",
+                                fontSize: 15,
+                                horizontalPadding: 10,
+                                color: AaspasColors.black,
+                                // bgColor: AaspasColors.soft2,
+                                spacing: 0,
+                                showIcon: false,
+                                iconSize: 0,
+                                fontWeight: FontWeight.w600,
                               ),
                             ],
                           ),
@@ -400,21 +425,21 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             spacing: 10,
                             children: [
-                              LabelCard(
-                                decoration: BoxDecoration(
-                                  color: AaspasColors.soft2,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                title: "Flat",
-                                fontSize: 15,
-                                horizontalPadding: 10,
-                                color: AaspasColors.black,
-                                // bgColor: AaspasColors.soft2,
-                                spacing: 0,
-                                showIcon: false,
-                                iconSize: 0,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              // LabelCard(
+                              //   decoration: BoxDecoration(
+                              //     color: AaspasColors.soft2,
+                              //     borderRadius: BorderRadius.circular(4),
+                              //   ),
+                              //   title: item.itemName ?? "N/A",
+                              //   fontSize: 15,
+                              //   horizontalPadding: 10,
+                              //   color: AaspasColors.black,
+                              //   // bgColor: AaspasColors.soft2,
+                              //   spacing: 0,
+                              //   showIcon: false,
+                              //   iconSize: 0,
+                              //   fontWeight: FontWeight.w600,
+                              // ),
                               LabelCard(
                                 decoration: BoxDecoration(
                                   color: AaspasColors.soft2,

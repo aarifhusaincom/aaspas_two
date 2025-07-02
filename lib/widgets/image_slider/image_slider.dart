@@ -23,16 +23,16 @@ class _ImageSliderState extends State<ImageSlider> {
       'image_path':
           'https://raw.githubusercontent.com/aarifhusainwork/aaspas-storage-assets/refs/heads/main/AppWizard/AltImages/propertyDummyImages/1.png',
     },
-    {
-      'id': 2,
-      'image_path':
-          'https://raw.githubusercontent.com/aarifhusainwork/aaspas-storage-assets/refs/heads/main/AppWizard/AltImages/propertyDummyImages/2.png',
-    },
-    {
-      'id': 3,
-      'image_path':
-          'https://raw.githubusercontent.com/aarifhusainwork/aaspas-storage-assets/refs/heads/main/AppWizard/AltImages/propertyDummyImages/3.png',
-    },
+    // {
+    //   'id': 2,
+    //   'image_path':
+    //       'https://raw.githubusercontent.com/aarifhusainwork/aaspas-storage-assets/refs/heads/main/AppWizard/AltImages/propertyDummyImages/2.png',
+    // },
+    // {
+    //   'id': 3,
+    //   'image_path':
+    //       'https://raw.githubusercontent.com/aarifhusainwork/aaspas-storage-assets/refs/heads/main/AppWizard/AltImages/propertyDummyImages/3.png',
+    // },
   ];
 
   bool containsMap(List list) {
@@ -126,7 +126,7 @@ class _ImageSliderState extends State<ImageSlider> {
                       .toList(),
               options: CarouselOptions(
                 scrollPhysics: BouncingScrollPhysics(),
-                autoPlay: (widget.imageLinks.length == 1) ? false : true,
+                autoPlay: (imageList.length == 1) ? false : true,
                 aspectRatio: 1,
 
                 viewportFraction: 1,

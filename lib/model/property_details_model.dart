@@ -31,6 +31,7 @@ class PropertyDetailsItems {
   String? sId;
   String? categoryId;
   String? itemId;
+  String? itemName;
   String? title;
   int? actualPrice;
   String? visualPrice;
@@ -58,6 +59,7 @@ class PropertyDetailsItems {
     this.sId,
     this.categoryId,
     this.itemId,
+    this.itemName,
     this.title,
     this.actualPrice,
     this.visualPrice,
@@ -86,6 +88,7 @@ class PropertyDetailsItems {
     sId = json['_id'];
     categoryId = json['categoryId'];
     itemId = json['itemId'];
+    itemName = json['itemName'];
     title = json['title'];
     actualPrice = json['actual_price'];
     visualPrice = json['visual_price'];
@@ -124,6 +127,7 @@ class PropertyDetailsItems {
     data['_id'] = this.sId;
     data['categoryId'] = this.categoryId;
     data['itemId'] = this.itemId;
+    data['itemName'] = this.itemName;
     data['title'] = this.title;
     data['actual_price'] = this.actualPrice;
     data['visual_price'] = this.visualPrice;

@@ -10,8 +10,21 @@ import '../constant_and_api/aaspas_constant.dart';
 
 class VideoPlayerItem extends StatefulWidget {
   final String videoUrl;
+  final String shopId;
+  final String shopImage;
+  final String shopName;
+  final String address;
+  final int views;
 
-  const VideoPlayerItem({super.key, required this.videoUrl});
+  const VideoPlayerItem({
+    super.key,
+    required this.videoUrl,
+    required this.shopId,
+    required this.shopImage,
+    required this.shopName,
+    required this.address,
+    required this.views,
+  });
 
   @override
   State<VideoPlayerItem> createState() => _VideoPlayerItemState();
@@ -140,7 +153,13 @@ class _VideoPlayerItemState extends State<VideoPlayerItem> {
               right: 16,
               // left: 16,
               width: (width - 32),
-              child: ShopCardOnReel(totalViews: 1500),
+              child: ShopCardOnReel(
+                shopId: widget.shopId,
+                shopImage: widget.shopImage,
+                shopName: widget.shopName,
+                address: widget.address,
+                views: widget.views,
+              ),
             ),
           ],
         )

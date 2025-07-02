@@ -124,6 +124,12 @@ class _VideoScrollScreenState extends State<VideoScrollScreen> {
                   // return VideoPlayerItem(videoUrl: ReelCache.videos[index]);
                   return VideoPlayerItem(
                     videoUrl: ReelCache.reelList[index].url!,
+                    shopImage:
+                        ReelCache.reelList[index].shopDetails!.shopImage!,
+                    shopId: ReelCache.reelList[index].shopId!,
+                    views: ReelCache.reelList[index].views!,
+                    shopName: ReelCache.reelList[index].shopDetails!.shopName!,
+                    address: ReelCache.reelList[index].shopDetails!.address!,
                   );
                 },
               ),

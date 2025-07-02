@@ -82,6 +82,7 @@ class ShopCard extends StatelessWidget {
                               ? AaspasWizard.shopAltImage
                               : image,
                       fit: BoxFit.cover,
+                      height: double.infinity,
                       errorWidget:
                           (context, url, error) => Image.asset(
                             fit: BoxFit.cover,
