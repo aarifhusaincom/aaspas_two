@@ -32,6 +32,10 @@ class _ReelsSlideViewState extends State<ReelsSlideView> {
         '?lat=${AaspasLocator.lat}&lng=${AaspasLocator.long}&page=$currentPage&pageSize=$pageSize';
     final url =
         '${AaspasWizard.baseUrl}${AaspasWizard.getAllReels}$paramString';
+
+    print("this is url 1");
+    print("url = $url");
+
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {

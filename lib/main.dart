@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 import '../../reels/reel_builder.dart';
+import 'constant_and_api/aaspas_constant.dart';
 import 'screens/search_screens/cat_item_wise.dart';
 import '../../screens/homepage.dart';
 import '../../screens/location_permission.dart';
@@ -53,7 +54,9 @@ main() async {
     isOld = boxBool.get('key_isOld');
   }
   isOld = boxBool.get('key_isOld');
-  Wizard.setWizardIntoConstant();
+  await Wizard.setWizardIntoConstant();
+  // print('model.api!.baseUrl!');
+  // print(AaspasWizard.baseUrl);
   runApp(const MyApp());
 }
 

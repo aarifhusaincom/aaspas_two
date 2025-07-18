@@ -83,6 +83,7 @@ class ShopCard extends StatelessWidget {
                               : image,
                       fit: BoxFit.cover,
                       height: double.infinity,
+                      width: double.infinity,
                       errorWidget:
                           (context, url, error) => Image.asset(
                             fit: BoxFit.cover,
@@ -150,12 +151,14 @@ class ShopCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(
-                            width: 58,
+                          Container(
+                            alignment: Alignment.centerRight,
+                            color: Colors.amberAccent,
+                            // width: 80,
                             child: Text(
+                              currentDistance,
                               maxLines: 1,
                               textAlign: TextAlign.center,
-                              currentDistance,
                               style: TextStyle(
                                 // fontFamily: "Roboto aarif",
                                 // fontStyle: FontStyle.italic,
